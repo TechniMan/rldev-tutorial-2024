@@ -1,15 +1,19 @@
 import * as ROT from 'rot-js'
 
-import { handleInput, MovementAction } from './input'
+import { handleInput } from './input'
 import { Entity } from './entity'
+import { GameMap } from './game-map'
 
 export class Engine {
   // constants
   public static readonly WIDTH = 80
   public static readonly HEIGHT = 50
+  public static readonly MAP_WIDTH = 80
+  public static readonly MAP_HEIGHT = 45
 
   // instance
   display: ROT.Display
+  gameMap: GameMap
 
   // map
   player: Entity
@@ -26,6 +30,7 @@ export class Engine {
     this.player = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, '@')
     const npc = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, 'n')
     this.entities = [this.player, npc]
+    this.gameMap = new GameMap(Engine.MAP_WIDTH, Engine.MAP_HEIGHT, this.display)
 
     // add to DOM
     const container = this.display.getContainer()!
@@ -43,8 +48,8 @@ export class Engine {
   update(event: KeyboardEvent) {
     const action = handleInput(event)
 
-    if (action instanceof MovementAction) {
-      this.player.move(action.dx, action.dy)
+    if (action) {
+      action.perform(this, this.player)
     }
 
     this.render()
@@ -52,6 +57,8 @@ export class Engine {
 
   render() {
     this.display.clear()
+
+    this.gameMap.render()
 
     this.entities.forEach((ent) => {
       this.display.draw(ent.x, ent.y, ent.char, ent.fg, ent.bg)
