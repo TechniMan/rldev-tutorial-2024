@@ -1,5 +1,5 @@
 import type { Tile } from './tile-types'
-import { FLOOR_TILE, WALL_TILE } from './tile-types'
+import { WALL_TILE } from './tile-types'
 import { Display } from 'rot-js'
 
 export class GameMap {
@@ -19,11 +19,7 @@ export class GameMap {
       const row = new Array(this.width)
 
       for (let x = 0; x < this.width; ++x) {
-        if (x >= 30 && x <= 32 && y >= 22 && y <= 24) {
-          row[x] = { ...WALL_TILE }
-        } else {
-          row[x] = { ...FLOOR_TILE }
-        }
+        row[x] = { ...WALL_TILE }
       }
 
       this.tiles[y] = row
@@ -34,7 +30,18 @@ export class GameMap {
     return 0 <= x && x < this.width && 0 <= y && y < this.height
   }
 
-  //TODO could pass display in here instead of saving it
+  addRoom(atX: number, atY: number, roomTiles: Tile[][]) {
+    for (let y = atY; y < atY + roomTiles.length; ++y) {
+      const mapRow = this.tiles[y]
+      const roomRow = roomTiles[y - atY];
+      for (let x = atX; x < atX + roomRow.length; ++x) {
+        // set the map tiles from the room tiles
+        mapRow[x] = roomRow[x - atX]
+      }
+    }
+  }
+
+  //TODO could pass display in here instead of saving it as a member
   render() {
     for (let y = 0; y < this.tiles.length; ++y) {
       const row = this.tiles[y]

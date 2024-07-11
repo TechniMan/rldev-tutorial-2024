@@ -3,6 +3,7 @@ import * as ROT from 'rot-js'
 import { handleInput } from './input'
 import { Entity } from './entity'
 import { GameMap } from './game-map'
+import { generateSimpleDungeon } from './procgen'
 
 export class Engine {
   // constants
@@ -30,7 +31,7 @@ export class Engine {
     this.player = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, '@')
     const npc = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, 'n')
     this.entities = [this.player, npc]
-    this.gameMap = new GameMap(Engine.MAP_WIDTH, Engine.MAP_HEIGHT, this.display)
+    this.gameMap = generateSimpleDungeon(Engine.MAP_WIDTH, Engine.MAP_HEIGHT, 1000, 5, 15, this.player, this.display)
 
     // add to DOM
     const container = this.display.getContainer()!

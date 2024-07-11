@@ -7,12 +7,7 @@ export interface Action {
 }
 
 export class MovementAction implements Action {
-  dx: number
-  dy: number
-
-  constructor(dx: number, dy: number) {
-    this.dx = dx
-    this.dy = dy
+  constructor(public dx: number, public dy: number) {
   }
 
   perform(engine: Engine, entity: Entity) {
