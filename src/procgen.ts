@@ -1,6 +1,7 @@
 import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types'
 import { GameMap } from './game-map'
 import type { Display } from 'rot-js'
+import { Map } from 'rot-js'
 import { Entity } from './entity'
 
 class Point2D {
@@ -133,5 +134,31 @@ export function generateSimpleDungeon(
   player.x = startPoint.x
   player.y = startPoint.y
 
+  return dungeon
+}
+
+export function generateRogueDungeon(
+  mapWidth: number,
+  mapHeight: number,
+  minRoomSize: number,
+  maxRoomSize: number,
+  player: Entity,
+  display: Display
+): GameMap {
+  const dungeon = new GameMap(mapWidth, mapHeight, display)
+  const map = new Map.Rogue(mapWidth, mapHeight, {
+    roomWidth: [minRoomSize, maxRoomSize],
+    roomHeight: [minRoomSize, maxRoomSize],
+    cellWidth: 5
+  })
+  let placedPlayer = false
+  map.create((x, y, val) => {
+    if (!val && !placedPlayer) {
+      player.x = x
+      player.y = y
+    }
+    dungeon.tiles[y][x] = val ? { ...WALL_TILE } : { ...FLOOR_TILE }
+    if (val !== 0 && val !== 1) console.log(`x:${x} y:${y} v:${val}`)
+  })
   return dungeon
 }
