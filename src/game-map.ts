@@ -9,7 +9,7 @@ export class GameMap {
   constructor(
     public width: number,
     public height: number,
-    public display: Display
+    public entities: Entity[]
   ) {
     this.tiles = new Array(this.height)
     for (let y = 0; y < this.height; ++y) {
@@ -23,8 +23,18 @@ export class GameMap {
     }
   }
 
+  public get nonPlayerEntities(): Entity[] {
+    return this.entities.filter((e) => e.name !== 'Player')
+  }
+
   isInBounds(x: number, y: number): boolean {
     return 0 <= x && x < this.width && 0 <= y && y < this.height
+  }
+
+  getBlockingEntityAtLocation(x: number, y: number): Entity | undefined {
+    return this.entities.find((e) => {
+      return e.x === x && e.y === y && e.blocksMovement
+    })
   }
 
   addRoom(atX: number, atY: number, roomTiles: Tile[][]) {
@@ -63,17 +73,24 @@ export class GameMap {
     })
   }
 
-  //TODO could pass display here directly, instead of saving it as a property
-  drawTile(x: number, y: number, tile: TileGraphic) {
-    this.display.draw(x, y, tile.char, tile.fg, tile.bg)
+  drawTile(display: Display, x: number, y: number, tile: TileGraphic) {
+    display.draw(x, y, tile.char, tile.fg, tile.bg)
   }
-  render() {
+
+  render(display: Display) {
+    // first, render the map
     for (let y = 0; y < this.tiles.length; ++y) {
       const row = this.tiles[y]
       for (let x = 0; x < row.length; ++x) {
         const tile = row[x]
         const graphic = tile.visible ? tile.light : tile.seen ? tile.dark : INVISIBLE
-        this.drawTile(x, y, graphic)
+        this.drawTile(display, x, y, graphic)
+      }
+    }
+    // then, render the entities
+    for (const e of this.entities) {
+      if (this.tiles[e.y][e.x].visible) {
+        display.draw(e.x, e.y, e.char, e.fg, e.bg)
       }
     }
   }

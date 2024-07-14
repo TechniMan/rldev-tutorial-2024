@@ -1,3 +1,5 @@
+import './extensions/Array'
+
 import { Engine } from './engine'
 
 declare global {

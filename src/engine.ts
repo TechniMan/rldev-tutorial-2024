@@ -1,7 +1,7 @@
 import * as ROT from 'rot-js'
 
 import { handleInput } from './input'
-import { Entity } from './entity'
+import { Entity, spawnPlayer } from './entity'
 import { GameMap } from './game-map'
 import { generateRogueDungeon } from './procgen'
 
@@ -11,6 +11,9 @@ export class Engine {
   public static readonly HEIGHT = 50
   public static readonly MAP_WIDTH = 80
   public static readonly MAP_HEIGHT = 45
+  public static readonly MIN_ROOM_SIZE = 5
+  public static readonly MAX_ROOM_SIZE = 15
+  public static readonly MAX_MONSTERS_PER_ROOM = 2
 
   // instance
   display: ROT.Display
@@ -18,8 +21,6 @@ export class Engine {
 
   // map
   player: Entity
-  /** includes player */
-  entities: Entity[]
 
   constructor() {
     // init
@@ -28,13 +29,17 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true
     })
-    this.player = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, '@')
-    const npc = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, 'n')
-    this.entities = [this.player, npc]
-    // this.gameMap = generateSimpleDungeon(Engine.MAP_WIDTH, Engine.MAP_HEIGHT, 20, 5, 15, this.player, this.display)
-    this.gameMap = generateRogueDungeon(Engine.MAP_WIDTH, Engine.MAP_HEIGHT, 5, 15, this.player, this.display)
+    this.player = spawnPlayer(0, 0) // spawn at 0,0 since the generator will place the player
+    this.gameMap = generateRogueDungeon(
+      Engine.MAP_WIDTH,
+      Engine.MAP_HEIGHT,
+      Engine.MIN_ROOM_SIZE,
+      Engine.MAX_ROOM_SIZE,
+      Engine.MAX_MONSTERS_PER_ROOM,
+      this.player
+    )
 
-    // add to DOM
+    // add to the page DOM
     const container = this.display.getContainer()!
     document.body.appendChild(container)
 
@@ -48,24 +53,33 @@ export class Engine {
     this.render()
   }
 
+  handleEnemyTurns() {
+    this.gameMap.nonPlayerEntities.forEach((e) => {
+      console.log(`The ${e.name} wonders when it will get to take a real turn.`)
+    })
+  }
+
   update(event: KeyboardEvent) {
     const action = handleInput(event)
 
+    // perform player's turn
     if (action) {
       action.perform(this, this.player)
     }
 
+    // perform enemy turns
+    this.handleEnemyTurns()
+
+    // update player vision
     this.gameMap.updateFov(this.player)
+
+    // display new world state
     this.render()
   }
 
   render() {
     this.display.clear()
-
-    this.gameMap.render()
-
-    this.entities.forEach((ent) => {
-      this.display.draw(ent.x, ent.y, ent.char, ent.fg, ent.bg)
-    })
+    // gameMap handles displaying the map and entities
+    this.gameMap.render(this.display)
   }
 }

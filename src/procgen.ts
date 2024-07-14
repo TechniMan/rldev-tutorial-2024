@@ -1,18 +1,25 @@
 import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types'
 import { GameMap } from './game-map'
-import type { Display } from 'rot-js'
 import { Map } from 'rot-js'
-import { Entity } from './entity'
+import { Entity, spawnOrc, spawnTroll } from './entity'
+import type { Room as RogueRoom } from 'rot-js/lib/map/rogue'
 
-class Point2D {
+class Point {
   constructor(
     public x: number,
     public y: number
   ) { }
 }
+interface Bounds {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
 
+/** Generate an integer from min to max, inclusive */
 function rand_range(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min)
+  return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 class RectangularRoom {
@@ -28,10 +35,44 @@ class RectangularRoom {
     this.buildRoom()
   }
 
-  public get centre(): Point2D {
+  static fromRogueRoom(rogueRoom: RogueRoom): RectangularRoom {
+    return new RectangularRoom(
+      rogueRoom.x,
+      rogueRoom.y,
+      rogueRoom.width,
+      rogueRoom.height
+    )
+  }
+
+  public get centre(): Point {
     const centreX = this.x + Math.floor(this.width / 2)
     const centreY = this.y + Math.floor(this.height / 2)
-    return new Point2D(centreX, centreY)
+    return new Point(centreX, centreY)
+  }
+
+  public get topLeft(): Point {
+    return new Point(this.x, this.y)
+  }
+
+  public get right(): number {
+    return this.x + this.width
+  }
+
+  public get bottom(): number {
+    return this.y + this.height
+  }
+
+  public get bottomRight(): Point {
+    return new Point(this.right, this.bottom)
+  }
+
+  public get bounds(): Bounds {
+    return {
+      x1: this.x,
+      y1: this.y,
+      x2: this.bottomRight.x,
+      y2: this.bottomRight.y
+    }
   }
 
   buildRoom() {
@@ -47,10 +88,10 @@ class RectangularRoom {
 
   intersects(other: RectangularRoom): boolean {
     return (
-      this.x <= other.x + other.width &&
-      this.x + this.width >= other.x &&
-      this.y <= other.y + other.height &&
-      this.y + this.height >= other.y
+      this.x <= other.right &&
+      this.right >= other.x &&
+      this.y <= other.bottom &&
+      this.bottom >= other.y
     )
   }
 }
@@ -58,12 +99,12 @@ class RectangularRoom {
 function* connectRooms(
   a: RectangularRoom,
   b: RectangularRoom
-): Generator<Point2D, void, void> {
+): Generator<Point, void, void> {
   let current = a.centre
   const target = b.centre
   // 50% chance of going horizontal first
   let horizontal = Math.random() < 0.5
-  let axisIndex: keyof Point2D = horizontal ? 'x' : 'y'
+  let axisIndex: keyof Point = horizontal ? 'x' : 'y'
 
   // keep going until we reach the target
   while (current.x !== target.x || current.y !== target.y) {
@@ -80,16 +121,36 @@ function* connectRooms(
   }
 }
 
+function placeEntities(
+  room: RectangularRoom,
+  dungeon: GameMap,
+  maxMonsters: number
+) {
+  const numberOfMonstersToAdd = rand_range(0, maxMonsters)
+  const bounds = room.bounds
+  for (let m = 0; m < numberOfMonstersToAdd; ++m) {
+    const x = rand_range(bounds.x1 + 1, bounds.x2 - 1)
+    const y = rand_range(bounds.y1 + 1, bounds.y2 - 1)
+
+    if (!dungeon.entities.any(e => e.x === x && e.y === y)) {
+      if (Math.random() < 0.8) {
+        dungeon.entities.push(spawnOrc(x, y))
+      } else {
+        dungeon.entities.push(spawnTroll(x, y))
+      }
+    }
+  }
+}
+
 export function generateSimpleDungeon(
   mapWidth: number,
   mapHeight: number,
   roomAttempts: number,
   minRoomSize: number,
   maxRoomSize: number,
-  player: Entity,
-  display: Display
+  player: Entity
 ): GameMap {
-  const dungeon = new GameMap(mapWidth, mapHeight, display)
+  const dungeon = new GameMap(mapWidth, mapHeight, [player])
 
   // generate rooms for the dungeon
   const rooms: RectangularRoom[] = []
@@ -102,7 +163,7 @@ export function generateSimpleDungeon(
 
     const newRoom = new RectangularRoom(x, y, width, height)
     // if this new room intersects any existing rooms ...
-    if (rooms.some(r => r.intersects(newRoom))) {
+    if (rooms.any(r => r.intersects(newRoom))) {
       // ... discard it and try again
       continue
     }
@@ -142,23 +203,35 @@ export function generateRogueDungeon(
   mapHeight: number,
   minRoomSize: number,
   maxRoomSize: number,
-  player: Entity,
-  display: Display
+  maxMonstersPerRoom: number,
+  player: Entity
 ): GameMap {
-  const dungeon = new GameMap(mapWidth, mapHeight, display)
+  const dungeon = new GameMap(mapWidth, mapHeight, [player])
   const map = new Map.Rogue(mapWidth, mapHeight, {
     roomWidth: [minRoomSize, maxRoomSize],
     roomHeight: [minRoomSize, maxRoomSize],
     cellWidth: 5
   })
-  let placedPlayer = false
+
+  // create the dungeon map
   map.create((x, y, val) => {
-    if (!val && !placedPlayer) {
-      player.x = x
-      player.y = y
-    }
     dungeon.tiles[y][x] = val ? { ...WALL_TILE } : { ...FLOOR_TILE }
     if (val !== 0 && val !== 1) console.log(`x:${x} y:${y} v:${val}`)
   })
+
+  // fill in the rooms
+  // @ts-ignore `rooms` is private
+  const rooms: RectangularRoom[] = map.rooms
+    .reduce((acc: RogueRoom[], cur: RogueRoom) => acc.concat(cur), [])
+    .map((rr: RogueRoom) => RectangularRoom.fromRogueRoom(rr))
+  // place the player
+  const startRoomIdx = rand_range(0, rooms.length - 1)
+  player.x = rooms[startRoomIdx].centre.x
+  player.y = rooms[startRoomIdx].centre.y
+  // place some entities in each room
+  rooms.forEach((r: RectangularRoom) => {
+    placeEntities(r, dungeon, maxMonstersPerRoom)
+  })
+
   return dungeon
 }
