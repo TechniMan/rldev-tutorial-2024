@@ -1,4 +1,4 @@
-const white = '#fff'
+// const white = '#fff'
 const grey = '#888'
 const black = '#000'
 const goldenrod = '#fc4'

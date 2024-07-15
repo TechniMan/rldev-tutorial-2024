@@ -1,7 +1,7 @@
 import * as ROT from 'rot-js'
 
 import { handleInput } from './input'
-import { Actor, Entity, spawnPlayer } from './entity'
+import { Actor, spawnPlayer } from './entity'
 import { GameMap } from './game-map'
 import { generateRogueDungeon } from './procgen'
 
