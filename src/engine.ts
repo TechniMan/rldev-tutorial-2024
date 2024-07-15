@@ -64,7 +64,7 @@ export class Engine {
 
     // perform player's turn
     if (action) {
-      action.perform(this, this.player)
+      action.perform(this.player)
     }
 
     // perform enemy turns
