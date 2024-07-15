@@ -1,7 +1,7 @@
 import { Display, FOV } from 'rot-js'
 import type { Tile, TileGraphic } from './tile-types'
 import { INVISIBLE, WALL_TILE } from './tile-types'
-import type { Entity } from './entity'
+import { Actor, type Entity } from './entity'
 
 export class GameMap {
   tiles: Tile[][]
@@ -25,6 +25,13 @@ export class GameMap {
 
   public get nonPlayerEntities(): Entity[] {
     return this.entities.filter((e) => e.name !== 'Player')
+  }
+
+  public get livingActors(): Actor[] {
+    return this.entities
+      .filter((e) => e instanceof Actor)
+      .map((e) => e as Actor)
+      .filter((a) => a.isAlive)
   }
 
   isInBounds(x: number, y: number): boolean {

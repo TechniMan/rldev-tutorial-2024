@@ -3,13 +3,8 @@ import { GameMap } from './game-map'
 import { Map } from 'rot-js'
 import { Entity, spawnOrc, spawnTroll } from './entity'
 import type { Room as RogueRoom } from 'rot-js/lib/map/rogue'
+import { Point } from './types/Point'
 
-class Point {
-  constructor(
-    public x: number,
-    public y: number
-  ) { }
-}
 interface Bounds {
   x1: number
   y1: number
