@@ -1,16 +1,16 @@
-import type { Entity } from './entity'
+import type { Actor, Entity } from './entity'
 
 // actions
 export interface Action {
   /**
    * Perform the action
-   * @param entity Entity performing the action
+   * @param performer Entity performing the action
    */
-  perform: (entity: Entity) => void
+  perform: (performer: Entity) => void
 }
 
 export class WaitAction implements Action {
-  perform(_entity: Entity) { }
+  perform(_performer: Entity) { }
 }
 
 export abstract class ActionWithDirection implements Action {
@@ -19,44 +19,52 @@ export abstract class ActionWithDirection implements Action {
     public dy: number
   ) { }
 
-  perform(_entity: Entity) { }
+  perform(_performer: Entity) { }
 }
 
 export class MovementAction extends ActionWithDirection {
-  perform(entity: Entity) {
-    const destX = entity.x + this.dx
-    const destY = entity.y + this.dy
+  perform(performer: Entity) {
+    const destX = performer.x + this.dx
+    const destY = performer.y + this.dy
 
     // ensure movement is valid
     if (!window.engine.gameMap.isInBounds(destX, destY)) return
     if (!window.engine.gameMap.tiles[destY][destX].walkable) return
     if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return
 
-    entity.move(this.dx, this.dy)
+    performer.move(this.dx, this.dy)
   }
 }
 
 export class MeleeAction extends ActionWithDirection {
-  perform(entity: Entity) {
-    const destX = entity.x + this.dx
-    const destY = entity.y + this.dy
-    const target = window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)
+  perform(performer: Actor) {
+    const destX = performer.x + this.dx
+    const destY = performer.y + this.dy
 
-    if (!target) return
+    const target = window.engine.gameMap.getActorAtLocation(destX, destY)
+    if (!target) throw new Error(`Failed to find actor to attack at ${destX}, ${destY}.`)
 
-    console.log(`You kick the ${target.name}, much to its annoyance!`)
+    const damage = performer.fighter.power - target.fighter.defense
+    const attackDescription = `${performer.name.toUpperCase()} attacks ${target.name}`
+
+    if (damage > 0) {
+      console.log(`${attackDescription} for ${damage} hit points.`)
+      target.fighter.hp -= damage
+    } else {
+      console.log(`${attackDescription} but does no damage.`)
+    }
   }
 }
 
 export class BumpAction extends ActionWithDirection {
-  perform(entity: Entity) {
-    const destX = entity.x + this.dx
-    const destY = entity.y + this.dy
+  perform(performer: Entity) {
+    const destX = performer.x + this.dx
+    const destY = performer.y + this.dy
 
-    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
-      return new MeleeAction(this.dx, this.dy).perform(entity)
+    if (window.engine.gameMap.getActorAtLocation(destX, destY)) {
+      return new MeleeAction(this.dx, this.dy).perform(performer as Actor)
     } else {
-      return new MovementAction(this.dx, this.dy).perform(entity)
+      return new MovementAction(this.dx, this.dy).perform(performer)
     }
   }
 }
@@ -67,10 +75,16 @@ interface MovementMap {
 }
 
 const MOVE_KEYS: MovementMap = {
-  ArrowUp: new MovementAction(0, -1),
-  ArrowDown: new MovementAction(0, 1),
-  ArrowLeft: new MovementAction(-1, 0),
-  ArrowRight: new MovementAction(1, 0)
+  // Numpad keys
+  1: new BumpAction(-1, 1),
+  2: new BumpAction(0, 1),
+  3: new BumpAction(1, 1),
+  4: new BumpAction(-1, 0),
+  5: new WaitAction(),
+  6: new BumpAction(1, 0),
+  7: new BumpAction(-1, -1),
+  8: new BumpAction(0, -1),
+  9: new BumpAction(1, -1)
 }
 
 // input handlers

@@ -1,7 +1,7 @@
 import * as ROT from 'rot-js'
 
 import { Action, MeleeAction, MovementAction, WaitAction } from '../input'
-import type { Entity } from '../entity'
+import type { Actor, Entity } from '../entity'
 import { Point } from '../types/Point'
 
 export abstract class BaseAI implements Action {
@@ -16,7 +16,7 @@ export abstract class BaseAI implements Action {
   calculatePathTo(destX: number, destY: number, entity: Entity) {
     const isPassable = (x: number, y: number) => window.engine.gameMap.tiles[y][x].walkable
     const dijkstra = new ROT.Path.Dijkstra(destX, destY, isPassable, {
-      topology: 4
+      topology: 8 // 4/6/8 directions of movement
     })
 
     this.path.clear()
@@ -44,7 +44,7 @@ export class HostileEnemy extends BaseAI {
     if (window.engine.gameMap.tiles[self.y][self.x].visible) {
       // if we are adjacent - attack!
       if (distance <= 1) {
-        return new MeleeAction(dx, dy).perform(self)
+        return new MeleeAction(dx, dy).perform(self as Actor)
       }
       // otherwise, find a path from us to them
       this.calculatePathTo(target.x, target.y, self)

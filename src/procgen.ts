@@ -50,11 +50,11 @@ class RectangularRoom {
   }
 
   public get right(): number {
-    return this.x + this.width
+    return this.x + this.width - 1
   }
 
   public get bottom(): number {
-    return this.y + this.height
+    return this.y + this.height - 1
   }
 
   public get bottomRight(): Point {

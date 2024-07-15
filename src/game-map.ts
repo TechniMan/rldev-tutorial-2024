@@ -44,6 +44,10 @@ export class GameMap {
     })
   }
 
+  getActorAtLocation(x: number, y: number): Actor | undefined {
+    return this.livingActors.find((a) => a.x === x && a.y === y)
+  }
+
   addRoom(atX: number, atY: number, roomTiles: Tile[][]) {
     for (let y = atY; y < atY + roomTiles.length; ++y) {
       const mapRow = this.tiles[y]
