@@ -98,8 +98,8 @@ export class GameMap {
         this.drawTile(display, x, y, graphic)
       }
     }
-    // then, render the entities
-    for (const e of this.entities) {
+    // then, render the entities in render order
+    for (const e of this.entities.slice().sort((a, b) => a.renderOrder - b.renderOrder)) {
       if (this.tiles[e.y][e.x].visible) {
         display.draw(e.x, e.y, e.char, e.fg, e.bg)
       }

@@ -1,7 +1,7 @@
 import * as ROT from 'rot-js'
 
 import { handleInput } from './input'
-import { Entity, spawnPlayer } from './entity'
+import { Actor, Entity, spawnPlayer } from './entity'
 import { GameMap } from './game-map'
 import { generateRogueDungeon } from './procgen'
 
@@ -20,7 +20,7 @@ export class Engine {
   gameMap: GameMap
 
   // map
-  player: Entity
+  player: Actor
 
   constructor() {
     // init
@@ -62,15 +62,18 @@ export class Engine {
   }
 
   update(event: KeyboardEvent) {
-    const action = handleInput(event)
+    // if (this.player.isAlive) {
+    if (this.player.fighter.hp > 0) {
+      const action = handleInput(event)
 
-    // perform player's turn
-    if (action) {
-      action.perform(this.player)
+      // perform player's turn
+      if (action) {
+        action.perform(this.player)
+      }
+
+      // perform enemy turns
+      this.handleEnemyTurns()
     }
-
-    // perform enemy turns
-    this.handleEnemyTurns()
 
     // update player vision
     this.gameMap.updateFov(this.player)
@@ -81,6 +84,11 @@ export class Engine {
 
   render() {
     this.display.clear()
+    // ui
+    this.display.drawText(
+      1, 47,
+      `HP: %c{red}%b{white}${this.player.fighter.hp}/%c{green}%b{white}${this.player.fighter.maxHp}`
+    )
     // gameMap handles displaying the map and entities
     this.gameMap.render(this.display)
   }
