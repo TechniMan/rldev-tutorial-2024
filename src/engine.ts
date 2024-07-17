@@ -4,13 +4,16 @@ import { handleInput } from './input'
 import { Actor, spawnPlayer } from './entity'
 import { GameMap } from './game-map'
 import { generateRogueDungeon } from './procgen'
+import { renderHealthBar } from './renderFunctions'
+import { MessageLog } from './messageLog'
+import { Colours } from './colours'
 
 export class Engine {
   // constants
   public static readonly WIDTH = 80
   public static readonly HEIGHT = 50
   public static readonly MAP_WIDTH = 80
-  public static readonly MAP_HEIGHT = 45
+  public static readonly MAP_HEIGHT = 43
   public static readonly MIN_ROOM_SIZE = 5
   public static readonly MAX_ROOM_SIZE = 15
   public static readonly MAX_MONSTERS_PER_ROOM = 2
@@ -18,6 +21,7 @@ export class Engine {
   // instance
   display: ROT.Display
   gameMap: GameMap
+  messageLog: MessageLog
 
   // map
   player: Actor
@@ -29,6 +33,11 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true
     })
+    this.messageLog = new MessageLog()
+    this.messageLog.addMessage(
+      'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
+      Colours.WelcomeText
+    )
     this.player = spawnPlayer(0, 0) // spawn at 0,0 since the generator will place the player
     this.gameMap = generateRogueDungeon(
       Engine.MAP_WIDTH,
@@ -69,10 +78,10 @@ export class Engine {
       // perform player's turn
       if (action) {
         action.perform(this.player)
-      }
 
-      // perform enemy turns
-      this.handleEnemyTurns()
+        // perform enemy turns
+        this.handleEnemyTurns()
+      }
     }
 
     // update player vision
@@ -85,9 +94,18 @@ export class Engine {
   render() {
     this.display.clear()
     // ui
-    this.display.drawText(
-      1, 47,
-      `HP: %c{red}%b{white}${this.player.fighter.hp}/%c{green}%b{white}${this.player.fighter.maxHp}`
+    this.messageLog.render(
+      this.display,
+      21,
+      45,
+      40,
+      5
+    )
+    renderHealthBar(
+      this.display,
+      this.player.fighter.hp,
+      this.player.fighter.maxHp,
+      20
     )
     // gameMap handles displaying the map and entities
     this.gameMap.render(this.display)
