@@ -5,10 +5,7 @@ import { Colours } from './colours'
 export class Message {
   count: number
 
-  constructor(
-    public plainText: string,
-    public fg: Colours
-  ) {
+  constructor(public plainText: string, public fg: Colours) {
     this.count = 1
   }
 
@@ -47,6 +44,8 @@ export class MessageLog {
   ) {
     // reverse a copy of messages
     const reversed = messages.slice().reverse()
+    let yOffset = height - 1
+
     for (const msg of reversed) {
       // if necessary, split the message into multiple lines
       let lines = [msg.fullText]
@@ -76,7 +75,6 @@ export class MessageLog {
       }
 
       // draw all lines of the message
-      let yOffset = height - 1
       for (const line of lines) {
         const text = `%c{${msg.fg}}${line}`
         display.drawText(x, y + yOffset, text, width)

@@ -1,3 +1,4 @@
+import { Colours } from './colours'
 import type { Actor, Entity } from './entity'
 
 // actions
@@ -10,16 +11,13 @@ export interface Action {
 }
 
 export class WaitAction implements Action {
-  perform(_performer: Entity) { }
+  perform(_performer: Entity) {}
 }
 
 export abstract class ActionWithDirection implements Action {
-  constructor(
-    public dx: number,
-    public dy: number
-  ) { }
+  constructor(public dx: number, public dy: number) {}
 
-  perform(_performer: Entity) { }
+  perform(_performer: Entity) {}
 }
 
 export class MovementAction extends ActionWithDirection {
@@ -42,16 +40,27 @@ export class MeleeAction extends ActionWithDirection {
     const destY = performer.y + this.dy
 
     const target = window.engine.gameMap.getActorAtLocation(destX, destY)
-    if (!target) throw new Error(`Failed to find actor to attack at ${destX}, ${destY}.`)
+    if (!target)
+      throw new Error(`Failed to find actor to attack at ${destX}, ${destY}.`)
 
     const damage = performer.fighter.power - target.fighter.defense
-    const attackDescription = `${performer.name.toUpperCase()} attacks ${target.name}`
+    const attackDescription = `${performer.name.toUpperCase()} attacks ${
+      target.name
+    }`
 
+    const fg =
+      performer.name === 'Player' ? Colours.PlayerAttack : Colours.EnemyAttack
     if (damage > 0) {
-      console.log(`${attackDescription} for ${damage} hit points.`)
+      window.engine.messageLog.addMessage(
+        `${attackDescription} for ${damage} hit points.`,
+        fg
+      )
       target.fighter.hp -= damage
     } else {
-      console.log(`${attackDescription} but does no damage.`)
+      window.engine.messageLog.addMessage(
+        `${attackDescription} but does no damage.`,
+        fg
+      )
     }
   }
 }

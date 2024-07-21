@@ -20,7 +20,10 @@ declare global {
   }
 }
 
-Array.prototype.any = function <T>(this: T[], predicate: (value: T, index: number, array: T[]) => unknown): boolean {
+Array.prototype.any = function <T>(
+  this: T[],
+  predicate: (value: T, index: number, array: T[]) => unknown
+): boolean {
   return this.some(predicate)
 }
 
@@ -36,4 +39,4 @@ Array.prototype.last = function <T>(this: T[]): T | undefined {
   return this.length > 0 ? this[this.length - 1] : undefined
 }
 
-export { }
+export {}

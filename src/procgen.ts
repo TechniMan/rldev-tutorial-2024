@@ -74,7 +74,8 @@ class RectangularRoom {
     for (let y = 0; y < this.height; ++y) {
       const row = new Array(this.width)
       for (let x = 0; x < this.width; ++x) {
-        const isWall = x === 0 || x === this.width - 1 || y === 0 || y === this.height - 1
+        const isWall =
+          x === 0 || x === this.width - 1 || y === 0 || y === this.height - 1
         row[x] = isWall ? { ...WALL_TILE } : { ...FLOOR_TILE }
       }
       this.tiles[y] = row
@@ -127,7 +128,7 @@ function placeEntities(
     const x = rand_range(bounds.x1 + 1, bounds.x2 - 1)
     const y = rand_range(bounds.y1 + 1, bounds.y2 - 1)
 
-    if (!dungeon.entities.any(e => e.x === x && e.y === y)) {
+    if (!dungeon.entities.any((e) => e.x === x && e.y === y)) {
       if (Math.random() < 0.8) {
         dungeon.entities.push(spawnOrc(x, y))
       } else {
@@ -158,7 +159,7 @@ export function generateSimpleDungeon(
 
     const newRoom = new RectangularRoom(x, y, width, height)
     // if this new room intersects any existing rooms ...
-    if (rooms.any(r => r.intersects(newRoom))) {
+    if (rooms.any((r) => r.intersects(newRoom))) {
       // ... discard it and try again
       continue
     }
@@ -211,7 +212,6 @@ export function generateRogueDungeon(
   // create the dungeon map
   map.create((x, y, val) => {
     dungeon.tiles[y][x] = val ? { ...WALL_TILE } : { ...FLOOR_TILE }
-    if (val !== 0 && val !== 1) console.log(`x:${x} y:${y} v:${val}`)
   })
 
   // fill in the rooms

@@ -1,5 +1,6 @@
 import { BaseComponent } from './Base'
 import { Actor, RenderOrder } from '../entity'
+import { Colours } from '../colours'
 
 export class Fighter implements BaseComponent {
   _hp: number
@@ -29,11 +30,14 @@ export class Fighter implements BaseComponent {
   die() {
     if (!this.entity) return
 
-    let deathMessage = ''
+    let deathMessage: string
+    let fg: Colours
     if (window.engine.player === this.entity) {
       deathMessage = 'You died!'
+      fg = Colours.PlayerDie
     } else {
       deathMessage = `${this.entity.name} has died.`
+      fg = Colours.EnemyDie
     }
 
     this.entity.char = '%'
@@ -43,6 +47,6 @@ export class Fighter implements BaseComponent {
     this.entity.name = `Remains of ${this.entity.name}`
     this.entity.renderOrder = RenderOrder.Corpse
 
-    console.log(deathMessage)
+    window.engine.messageLog.addMessage(deathMessage, fg)
   }
 }

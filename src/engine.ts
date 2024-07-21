@@ -4,9 +4,10 @@ import { handleInput } from './input'
 import { Actor, spawnPlayer } from './entity'
 import { GameMap } from './game-map'
 import { generateRogueDungeon } from './procgen'
-import { renderHealthBar } from './renderFunctions'
+import { renderHealthBar, renderNamesAtLocation } from './renderFunctions'
 import { MessageLog } from './messageLog'
 import { Colours } from './colours'
+import { Point } from './types/Point'
 
 export class Engine {
   // constants
@@ -25,6 +26,7 @@ export class Engine {
 
   // map
   player: Actor
+  mousePosition: Point
 
   constructor() {
     // init
@@ -33,6 +35,7 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true
     })
+    this.mousePosition = new Point(0, 0)
     this.messageLog = new MessageLog()
     this.messageLog.addMessage(
       'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
@@ -57,9 +60,13 @@ export class Engine {
       this.update(ev)
     })
 
+    window.addEventListener('mousemove', (ev) => {
+      this.mousePosition = Point.fromArray(this.display.eventToPosition(ev))
+      this.render()
+    })
+
     // initial render
     this.gameMap.updateFov(this.player)
-    this.render()
   }
 
   handleEnemyTurns() {
@@ -94,19 +101,14 @@ export class Engine {
   render() {
     this.display.clear()
     // ui
-    this.messageLog.render(
-      this.display,
-      21,
-      45,
-      40,
-      5
-    )
+    this.messageLog.render(this.display, 21, 45, 40, 5)
     renderHealthBar(
       this.display,
       this.player.fighter.hp,
       this.player.fighter.maxHp,
       20
     )
+    renderNamesAtLocation(21, 44)
     // gameMap handles displaying the map and entities
     this.gameMap.render(this.display)
   }
