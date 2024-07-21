@@ -1,4 +1,5 @@
 import { Colours } from './colours'
+import { EngineState } from './engine'
 import type { Actor, Entity } from './entity'
 
 // actions
@@ -12,6 +13,12 @@ export interface Action {
 
 export class WaitAction implements Action {
   perform(_performer: Entity) {}
+}
+
+export class LogAction implements Action {
+  perform(_performer: Entity) {
+    window.engine.state = EngineState.Log
+  }
 }
 
 export abstract class ActionWithDirection implements Action {
@@ -84,7 +91,7 @@ interface MovementMap {
 }
 
 const MOVE_KEYS: MovementMap = {
-  // Numpad keys
+  // Movement keys
   1: new BumpAction(-1, 1),
   2: new BumpAction(0, 1),
   3: new BumpAction(1, 1),
@@ -93,10 +100,44 @@ const MOVE_KEYS: MovementMap = {
   6: new BumpAction(1, 0),
   7: new BumpAction(-1, -1),
   8: new BumpAction(0, -1),
-  9: new BumpAction(1, -1)
+  9: new BumpAction(1, -1),
+  // UI keys
+  l: new LogAction()
+}
+
+interface LogMap {
+  [key: string]: number
+}
+
+const LOG_KEYS: LogMap = {
+  ArrowUp: -1,
+  ArrowDown: 1,
+  PageUp: -10,
+  PageDown: 10
 }
 
 // input handlers
-export function handleInput(event: KeyboardEvent): Action {
+export function handleGameInput(event: KeyboardEvent): Action {
   return MOVE_KEYS[event.key]
+}
+
+export function handleLogInput(event: KeyboardEvent): number {
+  // scroll to beginning
+  if (event.key === 'Home') {
+    window.engine.logCursorPosition = 0
+    return 0
+  }
+  // scroll to end
+  if (event.key === 'End') {
+    window.engine.logCursorPosition =
+      window.engine.messageLog.messages.length - 1
+    return 0
+  }
+  // scroll an amount or close
+  const scrollAmount = LOG_KEYS[event.key]
+  if (!scrollAmount) {
+    window.engine.state = EngineState.Game
+    return 0
+  }
+  return scrollAmount
 }

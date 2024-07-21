@@ -34,7 +34,7 @@ export class MessageLog {
     }
   }
 
-  renderMessages(
+  static renderMessages(
     display: Display,
     x: number,
     y: number,
@@ -93,6 +93,6 @@ export class MessageLog {
     width: number,
     height: number
   ) {
-    this.renderMessages(display, x, y, width, height, this.messages)
+    MessageLog.renderMessages(display, x, y, width, height, this.messages)
   }
 }

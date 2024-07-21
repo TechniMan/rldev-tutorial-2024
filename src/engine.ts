@@ -1,13 +1,23 @@
 import * as ROT from 'rot-js'
 
-import { handleInput } from './input'
+import { handleGameInput, handleLogInput } from './input'
 import { Actor, spawnPlayer } from './entity'
 import { GameMap } from './game-map'
 import { generateRogueDungeon } from './procgen'
-import { renderHealthBar, renderNamesAtLocation } from './renderFunctions'
+import {
+  renderFrameWithTitle,
+  renderHealthBar,
+  renderNamesAtLocation
+} from './renderFunctions'
 import { MessageLog } from './messageLog'
 import { Colours } from './colours'
 import { Point } from './types/Point'
+
+export enum EngineState {
+  Game,
+  Dead,
+  Log
+}
 
 export class Engine {
   // constants
@@ -23,6 +33,8 @@ export class Engine {
   display: ROT.Display
   gameMap: GameMap
   messageLog: MessageLog
+  _state: EngineState
+  logCursorPosition: number
 
   // map
   player: Actor
@@ -30,6 +42,8 @@ export class Engine {
 
   constructor() {
     // init
+    this._state = EngineState.Game
+    this.logCursorPosition = 0
     this.display = new ROT.Display({
       width: Engine.WIDTH,
       height: Engine.HEIGHT,
@@ -69,6 +83,16 @@ export class Engine {
     this.gameMap.updateFov(this.player)
   }
 
+  public get state() {
+    return this._state
+  }
+
+  public set state(value) {
+    this._state = value
+    // reset log cursor position on state change
+    this.logCursorPosition = this.messageLog.messages.length - 1
+  }
+
   handleEnemyTurns() {
     this.gameMap.livingActors.forEach((a) => {
       if (a.isAlive) {
@@ -77,22 +101,57 @@ export class Engine {
     })
   }
 
-  update(event: KeyboardEvent) {
+  processGameLoop(event: KeyboardEvent) {
     // if (this.player.isAlive) {
     if (this.player.fighter.hp > 0) {
-      const action = handleInput(event)
+      const action = handleGameInput(event)
 
       // perform player's turn
       if (action) {
         action.perform(this.player)
 
-        // perform enemy turns
-        this.handleEnemyTurns()
+        if (this.state === EngineState.Game) {
+          // perform enemy turns
+          this.handleEnemyTurns()
+        }
       }
     }
 
     // update player vision
     this.gameMap.updateFov(this.player)
+  }
+
+  processLogLoop(event: KeyboardEvent) {
+    const scrollAmount = handleLogInput(event)
+    const wrapping = false
+    if (wrapping && scrollAmount < 0 && this.logCursorPosition === 0) {
+      // wrap around to the end
+      this.logCursorPosition = this.messageLog.messages.length - 1
+    } else if (
+      wrapping &&
+      scrollAmount > 0 &&
+      this.logCursorPosition === this.messageLog.messages.length - 1
+    ) {
+      // wrap around to the start
+      this.logCursorPosition = 0
+    } else {
+      // clamp the position moving to within the bounds of the log length
+      this.logCursorPosition = Math.max(
+        0,
+        Math.min(
+          this.logCursorPosition + scrollAmount,
+          this.messageLog.messages.length - 1
+        )
+      )
+    }
+  }
+
+  update(event: KeyboardEvent) {
+    if (this.state === EngineState.Game) {
+      this.processGameLoop(event)
+    } else if (this.state === EngineState.Log) {
+      this.processLogLoop(event)
+    }
 
     // display new world state
     this.render()
@@ -111,5 +170,17 @@ export class Engine {
     renderNamesAtLocation(21, 44)
     // gameMap handles displaying the map and entities
     this.gameMap.render(this.display)
+
+    if (this.state === EngineState.Log) {
+      renderFrameWithTitle(4, 4, 72, 37, 'Message History')
+      MessageLog.renderMessages(
+        this.display,
+        5,
+        5,
+        70,
+        35,
+        this.messageLog.messages.slice(0, this.logCursorPosition + 1)
+      )
+    }
   }
 }

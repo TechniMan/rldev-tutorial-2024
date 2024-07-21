@@ -47,3 +47,44 @@ export function renderNamesAtLocation(x: number, y: number) {
     window.engine.display.drawText(x, y, names)
   }
 }
+
+export function renderFrameWithTitle(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  title: string
+) {
+  // characters for the frame
+  const topLeft = '┌'
+  const topRight = '┐'
+  const bottomLeft = '└'
+  const bottomRight = '┘'
+  const vertical = '│'
+  const horizontal = '─'
+  const leftTitle = '┤'
+  const rightTitle = '├'
+  const empty = ' '
+  // sizings
+  const innerWidth = width - 2
+  const innerHeight = height - 2
+  const remainingAfterTitle = innerWidth - (title.length + 2) // add two for the borders either side of the title
+  const left = Math.floor(remainingAfterTitle / 2)
+  // strings that represent each row
+  const topRow =
+    topLeft +
+    horizontal.repeat(left) +
+    leftTitle +
+    title +
+    rightTitle +
+    horizontal.repeat(remainingAfterTitle - left) +
+    topRight
+  const middleRow = vertical + empty.repeat(innerWidth) + vertical
+  const bottomRow = bottomLeft + horizontal.repeat(innerWidth) + bottomRight
+  // actually draw the box
+  window.engine.display.drawText(x, y, topRow)
+  for (let r = 1; r <= innerHeight; ++r) {
+    window.engine.display.drawText(x, y + r, middleRow)
+  }
+  window.engine.display.drawText(x, y + height - 1, bottomRow)
+}
