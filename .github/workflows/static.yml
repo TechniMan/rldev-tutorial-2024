@@ -41,7 +41,7 @@ jobs:
       - name: NPM Build
         run: npm run build
       - name: Fix index
-        run: sed -i '' '8s/.*/  <script type="module" crossorigin src=".\/assets\/index-Jtezv_dP.js"><\/script>/' index.html
+        run: cd dist; sed -i '8s/.*/  <script type="module" crossorigin src=".\/assets\/index-Jtezv_dP.js"><\/script>/' index.html; cd ..
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
