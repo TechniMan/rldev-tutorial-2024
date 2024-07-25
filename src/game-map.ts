@@ -51,7 +51,7 @@ export class GameMap {
   addRoom(atX: number, atY: number, roomTiles: Tile[][]) {
     for (let y = atY; y < atY + roomTiles.length; ++y) {
       const mapRow = this.tiles[y]
-      const roomRow = roomTiles[y - atY];
+      const roomRow = roomTiles[y - atY]
       for (let x = atX; x < atX + roomRow.length; ++x) {
         // set the map tiles from the room tiles
         mapRow[x] = roomRow[x - atX]
@@ -88,20 +88,26 @@ export class GameMap {
     display.draw(x, y, tile.char, tile.fg, tile.bg)
   }
 
-  render(display: Display) {
+  render(display: Display, offsetX: number, offsetY: number) {
     // first, render the map
     for (let y = 0; y < this.tiles.length; ++y) {
       const row = this.tiles[y]
       for (let x = 0; x < row.length; ++x) {
         const tile = row[x]
-        const graphic = tile.visible ? tile.light : tile.seen ? tile.dark : INVISIBLE
-        this.drawTile(display, x, y, graphic)
+        const graphic = tile.visible
+          ? tile.light
+          : tile.seen
+          ? tile.dark
+          : INVISIBLE
+        this.drawTile(display, offsetX + x, offsetY + y, graphic)
       }
     }
     // then, render the entities in render order
-    for (const e of this.entities.slice().sort((a, b) => a.renderOrder - b.renderOrder)) {
+    for (const e of this.entities
+      .slice()
+      .sort((a, b) => a.renderOrder - b.renderOrder)) {
       if (this.tiles[e.y][e.x].visible) {
-        display.draw(e.x, e.y, e.char, e.fg, e.bg)
+        display.draw(offsetX + e.x, offsetY + e.y, e.char, e.fg, e.bg)
       }
     }
   }

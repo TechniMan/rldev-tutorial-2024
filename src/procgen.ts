@@ -206,7 +206,8 @@ export function generateRogueDungeon(
   const map = new Map.Rogue(mapWidth, mapHeight, {
     roomWidth: [minRoomSize, maxRoomSize],
     roomHeight: [minRoomSize, maxRoomSize],
-    cellWidth: 5
+    cellWidth: 3,
+    cellHeight: 3
   })
 
   // create the dungeon map

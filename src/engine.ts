@@ -23,8 +23,14 @@ export class Engine {
   // constants
   public static readonly WIDTH = 80
   public static readonly HEIGHT = 50
-  public static readonly MAP_WIDTH = 80
-  public static readonly MAP_HEIGHT = 43
+  public static readonly UI_X = 0
+  public static readonly UI_Y = 0
+  public static readonly UI_WIDTH = 30
+  public static readonly UI_HEIGHT = 50
+  public static readonly MAP_X = 31
+  public static readonly MAP_Y = 1
+  public static readonly MAP_WIDTH = 48
+  public static readonly MAP_HEIGHT = 48
   public static readonly MIN_ROOM_SIZE = 5
   public static readonly MAX_ROOM_SIZE = 15
   public static readonly MAX_MONSTERS_PER_ROOM = 2
@@ -52,7 +58,8 @@ export class Engine {
     this.mousePosition = new Point(0, 0)
     this.messageLog = new MessageLog()
     this.messageLog.addMessage(
-      'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
+      // 'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
+      'Welcome to the dungeon, adventurer!',
       Colours.WelcomeText
     )
     this.player = spawnPlayer(0, 0) // spawn at 0,0 since the generator will place the player
@@ -159,27 +166,73 @@ export class Engine {
 
   render() {
     this.display.clear()
+
     // ui
-    this.messageLog.render(this.display, 21, 45, 40, 5)
+    // y:0-5
+    renderFrameWithTitle(
+      Engine.UI_X,
+      Engine.UI_Y,
+      Engine.UI_WIDTH,
+      3,
+      'Player Info'
+    )
+    // y:1
     renderHealthBar(
       this.display,
       this.player.fighter.hp,
       this.player.fighter.maxHp,
-      20
+      Engine.UI_X + 1,
+      Engine.UI_Y + 1,
+      Engine.UI_WIDTH - 2
     )
-    renderNamesAtLocation(21, 44)
-    // gameMap handles displaying the map and entities
-    this.gameMap.render(this.display)
 
+    // gameMap handles displaying the map and entities
+    renderFrameWithTitle(
+      Engine.MAP_X - 1,
+      Engine.MAP_Y - 1,
+      Engine.MAP_WIDTH + 2,
+      Engine.MAP_HEIGHT + 2,
+      'Map'
+    )
+    this.gameMap.render(this.display, Engine.MAP_X, Engine.MAP_Y)
+    renderNamesAtLocation(
+      Engine.MAP_X,
+      Engine.MAP_HEIGHT,
+      new Point(Engine.MAP_X, Engine.MAP_Y)
+    )
+
+    // show messages in a frame on the side, or in big view
     if (this.state === EngineState.Log) {
-      renderFrameWithTitle(4, 4, 72, 37, 'Message History')
+      renderFrameWithTitle(
+        0,
+        0,
+        Engine.UI_WIDTH,
+        Engine.UI_HEIGHT,
+        'Message History'
+      )
       MessageLog.renderMessages(
         this.display,
-        5,
-        5,
-        70,
-        35,
+        1,
+        1,
+        Engine.UI_WIDTH - 2,
+        Engine.UI_HEIGHT - 2,
         this.messageLog.messages.slice(0, this.logCursorPosition + 1)
+      )
+    } else {
+      // 1,5 -> 28, 15
+      renderFrameWithTitle(
+        0,
+        Engine.UI_HEIGHT - 17,
+        Engine.UI_WIDTH,
+        17,
+        'Messages'
+      )
+      this.messageLog.render(
+        this.display,
+        1,
+        Engine.UI_HEIGHT - 16,
+        Engine.UI_WIDTH - 2,
+        15
       )
     }
   }

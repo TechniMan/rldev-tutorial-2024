@@ -50,7 +50,6 @@ export class MessageLog {
       // if necessary, split the message into multiple lines
       let lines = [msg.fullText]
       if (msg.fullText.length > width) {
-        //TODO also split hyphenated words?
         const words = msg.fullText.split(' ')
         let currentLine = ''
         // remove the full text from lines
@@ -60,16 +59,21 @@ export class MessageLog {
         while (words.length > 0) {
           // if adding to current line makes it too long, start a new line
           if (`${currentLine} ${words[0]}`.length > width) {
-            lines.push(currentLine.trim())
+            lines.push(currentLine)
             currentLine = ''
           } else {
             // pop the first word out of the array and onto the end of the line
-            currentLine += ' ' + words.shift()
+            if (currentLine) {
+              currentLine += ' ' + words.shift()
+            } else {
+              // the first word doesn't need to space in front
+              currentLine += words.shift()
+            }
           }
         }
 
         // add the current line to the lines
-        lines.push(currentLine.trim())
+        lines.push(currentLine)
         // reverse the lines for some reason?
         lines.reverse()
       }
