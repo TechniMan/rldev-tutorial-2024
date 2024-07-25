@@ -130,9 +130,9 @@ function placeEntities(
 
     if (!dungeon.entities.any((e) => e.x === x && e.y === y)) {
       if (Math.random() < 0.8) {
-        dungeon.entities.push(spawnOrc(x, y))
+        spawnOrc(dungeon, x, y)
       } else {
-        dungeon.entities.push(spawnTroll(x, y))
+        spawnTroll(dungeon, x, y)
       }
     }
   }
@@ -224,6 +224,7 @@ export function generateRogueDungeon(
   const startRoomIdx = rand_range(0, rooms.length - 1)
   player.x = rooms[startRoomIdx].centre.x
   player.y = rooms[startRoomIdx].centre.y
+  player.parent = dungeon
   // place some entities in each room
   rooms.forEach((r: RectangularRoom) => {
     placeEntities(r, dungeon, maxMonstersPerRoom)

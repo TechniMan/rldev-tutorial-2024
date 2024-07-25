@@ -11,10 +11,11 @@ export abstract class BaseAI implements Action {
     this.path = []
   }
 
-  perform(_entity: Entity) { }
+  perform(_performer: Entity) {}
 
   calculatePathTo(destX: number, destY: number, entity: Entity) {
-    const isPassable = (x: number, y: number) => window.engine.gameMap.tiles[y][x].walkable
+    const isPassable = (x: number, y: number) =>
+      window.engine.gameMap.tiles[y][x].walkable
     const dijkstra = new ROT.Path.Dijkstra(destX, destY, isPassable, {
       topology: 8 // 4/6/8 directions of movement
     })

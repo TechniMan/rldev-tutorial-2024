@@ -23,6 +23,10 @@ export class GameMap {
     }
   }
 
+  public get gameMap(): GameMap {
+    return this
+  }
+
   public get nonPlayerEntities(): Entity[] {
     return this.entities.filter((e) => e.name !== 'Player')
   }
