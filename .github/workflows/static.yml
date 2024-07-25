@@ -2,10 +2,10 @@
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on pushes targeting the main branch
   push:
     branches:
-    - main
+      - main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,14 +16,12 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: true
 
 jobs:
-  # Simple job to checkout the code, build it with npm, the package and deploy the dist/ folder to pages
+  # checkout the code, build it with npm, then package and deploy the dist/ folder to pages
   buildAndDeploy:
     environment:
       name: github-pages
@@ -41,7 +39,8 @@ jobs:
       - name: NPM Build
         run: npm run build
       - name: Fix index
-        run: cd dist; sed -i '8s/.*/  <script type="module" crossorigin src=".\/assets\/index-Jtezv_dP.js"><\/script>/' index.html; cd ..
+        # use sed to read and edit the <script> line to add the .; then use awk to write and replace index with the new text
+        run: cd dist; awk -v replacement="$(sed -n '8p' index.html | sed -r 's/(.{41})/\1./')" 'NR==8 {$0=replacement} 1' index.html > temp && mv temp index.html index.html; cd ..
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
