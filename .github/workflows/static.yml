@@ -40,7 +40,7 @@ jobs:
         run: npm run build
       - name: Fix index
         # use sed to read and edit the <script> line to add the .; then use awk to write and replace index with the new text
-        run: cd dist; awk -v replacement="$(sed -n '8p' index.html | sed -r 's/(.{41})/\1./')" 'NR==8 {$0=replacement} 1' index.html > temp && mv temp index.html index.html; cd ..
+        run: cd dist; awk -v replacement="$(sed -n '8p' index.html | sed -r 's/(.{41})/\1./')" 'NR==8 {$0=replacement} 1' index.html > temp && mv temp index.html; cd ..
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
