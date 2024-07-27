@@ -1,5 +1,5 @@
 import type { Entity } from '../entity'
-import type { GameMap } from '../game-map'
+import type { GameMap } from '../gameMap'
 
 export abstract class BaseComponent {
   /** Ref to parent entity */

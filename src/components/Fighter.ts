@@ -24,11 +24,34 @@ export class Fighter extends BaseComponent {
     this._hp = Math.max(0, Math.min(value, this.maxHp))
 
     if (this._hp === 0 && this.parent?.isAlive) {
-      this.die()
+      this._die()
     }
   }
 
-  die() {
+  /**
+   * Heals the fighter by amount.
+   * @param amount Amount of HP to heal.
+   * @returns Amount actually healed.
+   */
+  heal(amount: number): number {
+    const newHp = Math.min(this.maxHp, this.hp + amount)
+    const amountRecovered = newHp - this.hp
+    this.hp = newHp
+    return amountRecovered
+  }
+
+  /**
+   * Deal damage to this fighter.
+   * @param amount Amount of HP to take as damage.
+   */
+  takeDamage(amount: number) {
+    this.hp -= amount
+  }
+
+  /**
+   * Process the death of this fighter.
+   */
+  private _die() {
     // if we don't have a parent entity - panic!
     if (!this.parent) return
 

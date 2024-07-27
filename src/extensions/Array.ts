@@ -17,6 +17,7 @@ declare global {
      * Returns the last element, or undefined if the array is empty
      */
     last(): T | undefined
+    contains(value: T): boolean
   }
 }
 
@@ -37,6 +38,10 @@ Array.prototype.first = function <T>(this: T[]): T | undefined {
 
 Array.prototype.last = function <T>(this: T[]): T | undefined {
   return this.length > 0 ? this[this.length - 1] : undefined
+}
+
+Array.prototype.contains = function <T>(this: T[], value: T): boolean {
+  return this.indexOf(value) !== -1
 }
 
 export {}

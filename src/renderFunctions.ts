@@ -26,8 +26,8 @@ export function renderHealthBar(
 ) {
   const barWidth = Math.floor((currentValue / maxValue) * width)
 
-  drawColouredBar(display, x, y, width, Colours.BarEmpty)
-  drawColouredBar(display, x, y, barWidth, Colours.BarFilled)
+  drawColouredBar(display, x, y, width, Colours.BarBg)
+  drawColouredBar(display, x, y, barWidth, Colours.BarFg)
 
   const healthText = `HP: ${currentValue}/${maxValue}`
 

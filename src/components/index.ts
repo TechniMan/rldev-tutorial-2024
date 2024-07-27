@@ -1,2 +1,6 @@
-export { Fighter } from './Fighter'
 export { BaseAI, HostileEnemy } from './AI'
+export { BaseComponent } from './Base'
+export type { Consumable } from './Consumable'
+export { HealingConsumable } from './Consumable'
+export { Fighter } from './Fighter'
+export { Inventory } from './Inventory'

@@ -1,7 +1,7 @@
-import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types'
-import { GameMap } from './game-map'
+import { FLOOR_TILE, WALL_TILE, Tile } from './tileTypes'
+import { GameMap } from './gameMap'
 import { Map } from 'rot-js'
-import { Entity, spawnOrc, spawnTroll } from './entity'
+import { Entity, spawnOrc, spawnTroll, spawnHealthPotion } from './entity'
 import type { Room as RogueRoom } from 'rot-js/lib/map/rogue'
 import { Point } from './types/Point'
 
@@ -120,20 +120,30 @@ function* connectRooms(
 function placeEntities(
   room: RectangularRoom,
   dungeon: GameMap,
-  maxMonsters: number
+  maxMonsters: number,
+  maxItems: number
 ) {
   const numberOfMonstersToAdd = rand_range(0, maxMonsters)
   const bounds = room.bounds
+  // add monsters
   for (let m = 0; m < numberOfMonstersToAdd; ++m) {
     const x = rand_range(bounds.x1 + 1, bounds.x2 - 1)
     const y = rand_range(bounds.y1 + 1, bounds.y2 - 1)
-
     if (!dungeon.entities.any((e) => e.x === x && e.y === y)) {
       if (Math.random() < 0.8) {
         spawnOrc(dungeon, x, y)
       } else {
         spawnTroll(dungeon, x, y)
       }
+    }
+  }
+  // add items
+  const numberOfItemsToAdd = rand_range(0, maxItems)
+  for (let i = 0; i < numberOfItemsToAdd; ++i) {
+    const x = rand_range(bounds.x1 + 1, bounds.x2 - 1)
+    const y = rand_range(bounds.y1 + 1, bounds.y2 - 1)
+    if (!dungeon.entities.any((e) => e.x === x && e.y === y)) {
+      spawnHealthPotion(dungeon, x, y)
     }
   }
 }
@@ -200,6 +210,7 @@ export function generateRogueDungeon(
   minRoomSize: number,
   maxRoomSize: number,
   maxMonstersPerRoom: number,
+  maxItemsPerRoom: number,
   player: Entity
 ): GameMap {
   const dungeon = new GameMap(mapWidth, mapHeight, [player])
@@ -227,7 +238,7 @@ export function generateRogueDungeon(
   player.parent = dungeon
   // place some entities in each room
   rooms.forEach((r: RectangularRoom) => {
-    placeEntities(r, dungeon, maxMonstersPerRoom)
+    placeEntities(r, dungeon, maxMonstersPerRoom, maxItemsPerRoom)
   })
 
   return dungeon
