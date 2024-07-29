@@ -1,6 +1,7 @@
 import * as ROT from 'rot-js'
 
-import { handleGameInput, handleInventoryInput, handleLogInput } from './input'
+import type { BaseInputHandler } from './inputHandlers'
+import { GameInputHandler, InputState } from './inputHandlers'
 import { Actor, spawnPlayer } from './entity'
 import { GameMap } from './gameMap'
 import { generateRogueDungeon } from './procgen'
@@ -12,14 +13,7 @@ import {
 import { MessageLog } from './messageLog'
 import { Colours } from './colours'
 import { Point } from './types/Point'
-
-export enum EngineState {
-  Game,
-  Dead,
-  Log,
-  UseInventory,
-  DropInventory
-}
+import { Action } from './actions'
 
 export class Engine {
   // constants
@@ -42,7 +36,7 @@ export class Engine {
   display: ROT.Display
   gameMap: GameMap
   messageLog: MessageLog
-  _state: EngineState
+  inputHandler: BaseInputHandler
   logCursorPosition: number
 
   // map
@@ -51,7 +45,7 @@ export class Engine {
 
   constructor() {
     // init
-    this._state = EngineState.Game
+    this.inputHandler = new GameInputHandler()
     this.logCursorPosition = 0
     this.display = new ROT.Display({
       width: Engine.WIDTH,
@@ -94,16 +88,6 @@ export class Engine {
     this.gameMap.updateFov(this.player)
   }
 
-  public get state() {
-    return this._state
-  }
-
-  public set state(value) {
-    this._state = value
-    // reset log cursor position on state change
-    this.logCursorPosition = this.messageLog.messages.length - 1
-  }
-
   handleEnemyTurns() {
     this.gameMap.livingActors.forEach((a) => {
       if (a.isAlive) {
@@ -114,74 +98,19 @@ export class Engine {
     })
   }
 
-  processGameLoop(event: KeyboardEvent) {
-    // if (this.player.isAlive) {
-    if (this.player.fighter.hp > 0) {
-      const action = handleGameInput(event)
-
-      // perform player's turn
-      if (action) {
-        // catch an error thrown up in the player's action, and skip the enemy turns if one turns up
-        try {
-          action.perform(this.player)
-
-          if (this.state === EngineState.Game) {
-            // perform enemy turns
-            this.handleEnemyTurns()
-          }
-        } catch {}
-      }
-    }
-
-    // update player vision
-    this.gameMap.updateFov(this.player)
-  }
-
-  processLogLoop(event: KeyboardEvent) {
-    const scrollAmount = handleLogInput(event)
-    const wrapping = false
-    if (wrapping && scrollAmount < 0 && this.logCursorPosition === 0) {
-      // wrap around to the end
-      this.logCursorPosition = this.messageLog.messages.length - 1
-    } else if (
-      wrapping &&
-      scrollAmount > 0 &&
-      this.logCursorPosition === this.messageLog.messages.length - 1
-    ) {
-      // wrap around to the start
-      this.logCursorPosition = 0
-    } else {
-      // clamp the position moving to within the bounds of the log length
-      this.logCursorPosition = Math.max(
-        0,
-        Math.min(
-          this.logCursorPosition + scrollAmount,
-          this.messageLog.messages.length - 1
-        )
-      )
-    }
-  }
-
-  processInventoryLoop(event: KeyboardEvent) {
-    const action = handleInventoryInput(event)
-    // if a valid action was incurred, let the player perform it
-    if (action) {
-      action.perform(this.player)
-    }
-  }
-
   update(event: KeyboardEvent) {
-    if (this.state === EngineState.Game) {
-      this.processGameLoop(event)
-    } else if (this.state === EngineState.Log) {
-      this.processLogLoop(event)
-    } else if (
-      [EngineState.UseInventory, EngineState.DropInventory].contains(this.state)
-    ) {
-      this.processInventoryLoop(event)
+    // do the appropriate logic for the keyboard input
+    const action = this.inputHandler.handleKeyboardInput(event)
+    if (action instanceof Action) {
+      try {
+        action.perform(this.player)
+        this.handleEnemyTurns()
+        this.gameMap.updateFov(this.player)
+      } catch {}
     }
-
-    // display new world state
+    // progress to the next input handler (which could be the same handler)
+    this.inputHandler = this.inputHandler.nextHandler
+    // update the screen
     this.render()
   }
 
@@ -235,7 +164,7 @@ export class Engine {
       Engine.UI_WIDTH - 2
     )
 
-    if (this.state === EngineState.UseInventory) {
+    if (this.inputHandler.inputState === InputState.UseInventory) {
       // calculate height based on item count
       // const height = itemCount + 2 <= 3 ? 3 : itemCount + 2
       // const width = title.length + 4
@@ -249,7 +178,7 @@ export class Engine {
         'Select an item to use'
       )
       this.renderInventory(Engine.UI_X + 1, Engine.UI_Y + 4, 26)
-    } else if (this.state === EngineState.DropInventory) {
+    } else if (this.inputHandler.inputState === InputState.DropInventory) {
       renderFrameWithTitle(
         Engine.UI_X,
         Engine.UI_Y + 3,
@@ -258,7 +187,7 @@ export class Engine {
         'Select an item to drop'
       )
       this.renderInventory(Engine.UI_X + 1, Engine.UI_Y + 4, 26)
-    } else if (this.state === EngineState.Log) {
+    } else if (this.inputHandler.inputState === InputState.Log) {
       renderFrameWithTitle(
         Engine.UI_X,
         Engine.UI_Y + 3,
@@ -286,21 +215,23 @@ export class Engine {
       this.renderInventory(Engine.UI_X + 1, Engine.UI_Y + 4, 5)
     }
 
-    // y:33-50 MessageLog Frame
-    renderFrameWithTitle(
-      0,
-      Engine.UI_HEIGHT - 17,
-      Engine.UI_WIDTH,
-      17,
-      'Messages'
-    )
-    this.messageLog.render(
-      this.display,
-      1,
-      Engine.UI_HEIGHT - 16,
-      Engine.UI_WIDTH - 2,
-      15
-    )
+    if (this.inputHandler.inputState !== InputState.Log) {
+      // y:33-50 MessageLog Frame
+      renderFrameWithTitle(
+        0,
+        Engine.UI_HEIGHT - 17,
+        Engine.UI_WIDTH,
+        17,
+        'Messages'
+      )
+      this.messageLog.render(
+        this.display,
+        1,
+        Engine.UI_HEIGHT - 16,
+        Engine.UI_WIDTH - 2,
+        15
+      )
+    }
 
     // gameMap handles displaying the map and entities
     renderFrameWithTitle(

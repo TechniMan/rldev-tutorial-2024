@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js'
 
-import { Action, MeleeAction, MovementAction, WaitAction } from '../input'
+import { Action, MeleeAction, MovementAction, WaitAction } from '../actions'
 import type { Actor, Entity } from '../entity'
 import { Point } from '../types/Point'
 

@@ -1,6 +1,6 @@
 import type { Actor, Entity, Item } from '../entity'
 import { Inventory } from './Inventory'
-import { Action, ItemAction } from '../input'
+import { Action, ItemAction } from '../actions'
 import { Colours } from '../colours'
 
 export interface Consumable {
