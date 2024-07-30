@@ -74,12 +74,17 @@ export class GameInputHandler extends BaseInputHandler {
 
         case 'l':
           this.nextHandler = new LogInputHandler()
+          window.engine.logCursorPosition =
+            window.engine.messageLog.messages.length - 1
           break
         case 'i':
           this.nextHandler = new InventoryInputHandler(InputState.UseInventory)
           break
         case 'd':
           this.nextHandler = new InventoryInputHandler(InputState.DropInventory)
+          break
+        case 'h':
+          window.engine.printHelpMessages()
           break
 
         default:
@@ -114,6 +119,7 @@ export class LogInputHandler extends BaseInputHandler {
     const scrollAmount = LOG_KEYS[event.key]
     if (!scrollAmount) {
       this.nextHandler = new GameInputHandler()
+      return null
     }
 
     return new LogAction(() => {

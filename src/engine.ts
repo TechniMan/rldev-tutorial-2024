@@ -50,7 +50,7 @@ export class Engine {
     this.display = new ROT.Display({
       width: Engine.WIDTH,
       height: Engine.HEIGHT,
-      forceSquareRatio: true
+      forceSquareRatio: false
     })
     this.mousePosition = new Point(0, 0)
     this.messageLog = new MessageLog()
@@ -59,6 +59,7 @@ export class Engine {
       'Welcome to the dungeon, adventurer!',
       Colours.WelcomeText
     )
+    this.printHelpMessages()
     this.player = spawnPlayer(0, 0) // spawn at 0,0 since the generator will place the player
     this.gameMap = generateRogueDungeon(
       Engine.MAP_WIDTH,
@@ -86,6 +87,29 @@ export class Engine {
 
     // initial render
     this.gameMap.updateFov(this.player)
+  }
+
+  printHelpMessages() {
+    this.messageLog.addMessage(
+      'Use the numpad to move (5 waits a turn without moving).',
+      Colours.WelcomeText
+    )
+    this.messageLog.addMessage(
+      'Press l to expand your message log history.',
+      Colours.WelcomeText
+    )
+    this.messageLog.addMessage(
+      'Press i to open your inventory, then press a letter to use that item.',
+      Colours.WelcomeText
+    )
+    this.messageLog.addMessage(
+      'Or press d to open your inventory, then press a letter to drop that item.',
+      Colours.WelcomeText
+    )
+    this.messageLog.addMessage(
+      'Finally, press h to print this help again. Good luck!',
+      Colours.WelcomeText
+    )
   }
 
   handleEnemyTurns() {
@@ -165,11 +189,6 @@ export class Engine {
     )
 
     if (this.inputHandler.inputState === InputState.UseInventory) {
-      // calculate height based on item count
-      // const height = itemCount + 2 <= 3 ? 3 : itemCount + 2
-      // const width = title.length + 4
-      // const x = this.player.x <= 30 ? 40 : 0
-      // const y = 0
       renderFrameWithTitle(
         Engine.UI_X,
         Engine.UI_Y + 3,
@@ -192,15 +211,15 @@ export class Engine {
         Engine.UI_X,
         Engine.UI_Y + 3,
         Engine.UI_WIDTH,
-        Engine.UI_HEIGHT,
+        Engine.UI_HEIGHT - 3,
         'Message History'
       )
       MessageLog.renderMessages(
         this.display,
-        1,
-        1,
+        Engine.UI_X + 1,
+        Engine.UI_Y + 4,
         Engine.UI_WIDTH - 2,
-        Engine.UI_HEIGHT - 2,
+        Engine.UI_HEIGHT - 5,
         this.messageLog.messages.slice(0, this.logCursorPosition + 1)
       )
     } /* UI to render in the normal state */ else {
