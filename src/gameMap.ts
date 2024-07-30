@@ -55,12 +55,14 @@ export class GameMap {
 
   getBlockingEntityAtLocation(x: number, y: number): Entity | undefined {
     return this.entities.find((e) => {
-      return e.x === x && e.y === y && e.blocksMovement
+      return e.position.x === x && e.position.y === y && e.blocksMovement
     })
   }
 
   getActorAtLocation(x: number, y: number): Actor | undefined {
-    return this.livingActors.find((a) => a.x === x && a.y === y)
+    return this.livingActors.find(
+      (a) => a.position.x === x && a.position.y === y
+    )
   }
 
   addRoom(atX: number, atY: number, roomTiles: Tile[][]) {
@@ -91,7 +93,7 @@ export class GameMap {
     // then calculate currently visible tiles
     const fov = new FOV.PreciseShadowcasting(this.lightPasses.bind(this))
     // r is the distance of the point from the player, v is a value between [0, 1]
-    fov.compute(player.x, player.y, 8, (x, y, _r, v) => {
+    fov.compute(player.position.x, player.position.y, 8, (x, y, _r, v) => {
       if (v) {
         this.tiles[y][x].visible = true
         this.tiles[y][x].seen = true
@@ -121,8 +123,14 @@ export class GameMap {
     for (const e of this.entities
       .slice()
       .sort((a, b) => a.renderOrder - b.renderOrder)) {
-      if (this.tiles[e.y][e.x].visible) {
-        display.draw(offsetX + e.x, offsetY + e.y, e.char, e.fg, e.bg)
+      if (this.tiles[e.position.y][e.position.x].visible) {
+        display.draw(
+          offsetX + e.position.x,
+          offsetY + e.position.y,
+          e.char,
+          e.fg,
+          e.bg
+        )
       }
     }
   }

@@ -6,7 +6,6 @@ import {
   PickupAction,
   WaitAction
 } from './actions'
-import { Colours } from './colours'
 import { Point } from './types/Point'
 
 interface LogMap {

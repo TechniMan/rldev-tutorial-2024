@@ -4,9 +4,12 @@ export enum Colours {
   Grey = '#888',
   Black = '#000',
   Goldenrod = '#fc4',
+  Red = '#f00',
 
   PlayerAttack = '#eee',
   EnemyAttack = '#fcc',
+  NeedsTarget = '#4ff',
+  StatusEffectApplied = '#4f4',
   PlayerDie = '#f33',
   EnemyDie = '#fa3',
   WelcomeText = '#2af',

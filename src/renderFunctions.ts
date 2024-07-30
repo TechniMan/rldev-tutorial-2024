@@ -46,7 +46,7 @@ export function renderNamesAtLocation(x: number, y: number, mapOffset: Point) {
   ) {
     // get a list of names, separated by commas if there are multiple in the same spot
     const names = window.engine.gameMap.entities
-      .filter((e) => e.x === mouseX && e.y === mouseY)
+      .filter((e) => e.position.x === mouseX && e.position.y === mouseY)
       .map((e) => e.name.charAt(0).toUpperCase() + e.name.substring(1))
       .join(', ')
     window.engine.display.drawText(x, y, names)

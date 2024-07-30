@@ -8,6 +8,7 @@ import {
   Inventory
 } from './components'
 import { GameMap } from './gameMap'
+import { Point } from './types/Point'
 
 export enum RenderOrder {
   Corpse,
@@ -17,8 +18,7 @@ export enum RenderOrder {
 
 export class Entity {
   constructor(
-    public x: number,
-    public y: number,
+    public position: Point,
     public char: string,
     public fg: string = '#fff',
     public bg: string = '#000',
@@ -38,13 +38,13 @@ export class Entity {
   }
 
   move(dx: number, dy: number) {
-    this.x += dx
-    this.y += dy
+    this.position.x += dx
+    this.position.y += dy
   }
 
   place(x: number, y: number, gameMap: GameMap | undefined) {
-    this.x = x
-    this.y = y
+    this.position.x = x
+    this.position.y = y
     if (gameMap) {
       if (this.parent && this.parent === gameMap) {
         gameMap.removeEntity(this)
@@ -57,8 +57,7 @@ export class Entity {
 
 export class Actor extends Entity {
   constructor(
-    public x: number,
-    public y: number,
+    public position: Point,
     public char: string,
     public fg: string = '#fff',
     public bg: string = '#000',
@@ -68,7 +67,7 @@ export class Actor extends Entity {
     public inventory: Inventory,
     public parent: GameMap | null = null
   ) {
-    super(x, y, char, fg, bg, name, true, RenderOrder.Actor, parent)
+    super(position, char, fg, bg, name, true, RenderOrder.Actor, parent)
     this.fighter.parent = this
     this.inventory.parent = this
   }
@@ -81,8 +80,7 @@ export class Actor extends Entity {
 
 export class Item extends Entity {
   constructor(
-    public x: number,
-    public y: number,
+    public position: Point,
     public char: string = '?',
     public fg: string = '#fff',
     public bg: string = '#000',
@@ -90,7 +88,7 @@ export class Item extends Entity {
     public consumable: Consumable,
     public parent: GameMap | BaseComponent | null = null
   ) {
-    super(x, y, char, fg, bg, name, false, RenderOrder.Item, parent)
+    super(position, char, fg, bg, name, false, RenderOrder.Item, parent)
     this.consumable.parent = this
   }
 }
@@ -101,8 +99,7 @@ export function spawnPlayer(
   gameMap: GameMap | null = null
 ): Actor {
   return new Actor(
-    x,
-    y,
+    new Point(x, y),
     '@',
     '#fff',
     '#000',
@@ -116,8 +113,7 @@ export function spawnPlayer(
 
 export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
   return new Actor(
-    x,
-    y,
+    new Point(x, y),
     'o',
     '#484',
     '#000',
@@ -131,8 +127,7 @@ export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
 
 export function spawnTroll(gameMap: GameMap, x: number, y: number): Actor {
   return new Actor(
-    x,
-    y,
+    new Point(x, y),
     'T',
     '#080',
     '#000',
@@ -150,8 +145,7 @@ export function spawnHealthPotion(
   y: number
 ): Entity {
   return new Item(
-    x,
-    y,
+    new Point(x, y),
     '!',
     '#70f',
     '#000',

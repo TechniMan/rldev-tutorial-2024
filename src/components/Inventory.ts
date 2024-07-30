@@ -17,7 +17,11 @@ export class Inventory extends BaseComponent {
       if (this.parent) {
         // remove the one item from the list
         this.items.splice(index, 1)
-        item.place(this.parent.x, this.parent.y, window.engine.gameMap)
+        item.place(
+          this.parent.position.x,
+          this.parent.position.y,
+          window.engine.gameMap
+        )
         window.engine.messageLog.addMessage(
           `${this.parent.name} dropped the ${item.name}.`
         )

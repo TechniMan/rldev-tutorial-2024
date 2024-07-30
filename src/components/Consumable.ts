@@ -6,7 +6,7 @@ import { Colours } from '../colours'
 export interface Consumable {
   parent: Item | null
   getAction(): Action | null
-  activate(action: ItemAction, consumer: Entity): void
+  activate(consumer: Entity): void
 }
 
 export class HealingConsumable implements Consumable {
@@ -32,7 +32,7 @@ export class HealingConsumable implements Consumable {
     }
   }
 
-  activate(_action: ItemAction, entity: Entity) {
+  activate(entity: Entity) {
     const consumer = entity as Actor
     if (!consumer) return
 

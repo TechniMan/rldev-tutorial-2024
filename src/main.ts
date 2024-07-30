@@ -9,6 +9,9 @@ declare global {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  // style the page nicely to avoid blinding the player
+  document.body.style.backgroundColor = 'black'
+
   window.engine = new Engine()
 
   // initial render

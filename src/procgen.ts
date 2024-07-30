@@ -129,7 +129,9 @@ function placeEntities(
   for (let m = 0; m < numberOfMonstersToAdd; ++m) {
     const x = rand_range(bounds.x1 + 1, bounds.x2 - 1)
     const y = rand_range(bounds.y1 + 1, bounds.y2 - 1)
-    if (!dungeon.entities.any((e) => e.x === x && e.y === y)) {
+    if (
+      !dungeon.entities.any((e) => e.position.x === x && e.position.y === y)
+    ) {
       if (Math.random() < 0.8) {
         spawnOrc(dungeon, x, y)
       } else {
@@ -142,7 +144,9 @@ function placeEntities(
   for (let i = 0; i < numberOfItemsToAdd; ++i) {
     const x = rand_range(bounds.x1 + 1, bounds.x2 - 1)
     const y = rand_range(bounds.y1 + 1, bounds.y2 - 1)
-    if (!dungeon.entities.any((e) => e.x === x && e.y === y)) {
+    if (
+      !dungeon.entities.any((e) => e.position.x === x && e.position.y === y)
+    ) {
       spawnHealthPotion(dungeon, x, y)
     }
   }
@@ -198,8 +202,8 @@ export function generateSimpleDungeon(
 
   // player start position
   const startPoint = rooms[0].centre
-  player.x = startPoint.x
-  player.y = startPoint.y
+  player.position.x = startPoint.x
+  player.position.y = startPoint.y
 
   return dungeon
 }
@@ -233,8 +237,8 @@ export function generateRogueDungeon(
     .map((rr: RogueRoom) => RectangularRoom.fromRogueRoom(rr))
   // place the player
   const startRoomIdx = rand_range(0, rooms.length - 1)
-  player.x = rooms[startRoomIdx].centre.x
-  player.y = rooms[startRoomIdx].centre.y
+  player.position.x = rooms[startRoomIdx].centre.x
+  player.position.y = rooms[startRoomIdx].centre.y
   player.parent = dungeon
   // place some entities in each room
   rooms.forEach((r: RectangularRoom) => {

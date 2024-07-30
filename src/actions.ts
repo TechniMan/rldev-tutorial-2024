@@ -29,7 +29,7 @@ export class ItemAction extends Action {
   }
 
   perform = (performer: Entity) => {
-    this.item.consumable.activate(this, performer)
+    this.item.consumable.activate(performer)
   }
 }
 
@@ -38,9 +38,9 @@ export class PickupAction extends Action {
     const performer = entity as Actor
     if (!performer) return
 
-    const { x, y, inventory } = performer
+    const { position, inventory } = performer
     for (const item of window.engine.gameMap.items) {
-      if (x === item.x && y === item.y) {
+      if (position.x === item.position.x && position.y === item.position.y) {
         if (inventory.items.length >= inventory.capacity) {
           window.engine.messageLog.addMessage(
             'Your inventory is full.',
@@ -93,8 +93,8 @@ function theWayIsBlocked() {
 
 export class MovementAction extends ActionWithDirection {
   perform = (performer: Entity) => {
-    const destX = performer.x + this.dx
-    const destY = performer.y + this.dy
+    const destX = performer.position.x + this.dx
+    const destY = performer.position.y + this.dy
 
     // ensure movement is valid
     if (!window.engine.gameMap.isInBounds(destX, destY)) {
@@ -116,8 +116,8 @@ export class MeleeAction extends ActionWithDirection {
     const performer = entity as Actor
     if (!performer) return
 
-    const destX = performer.x + this.dx
-    const destY = performer.y + this.dy
+    const destX = performer.position.x + this.dx
+    const destY = performer.position.y + this.dy
 
     const target = window.engine.gameMap.getActorAtLocation(destX, destY)
     if (!target) {
@@ -152,8 +152,8 @@ export class MeleeAction extends ActionWithDirection {
 
 export class BumpAction extends ActionWithDirection {
   perform = (performer: Entity) => {
-    const destX = performer.x + this.dx
-    const destY = performer.y + this.dy
+    const destX = performer.position.x + this.dx
+    const destY = performer.position.y + this.dy
 
     if (window.engine.gameMap.getActorAtLocation(destX, destY)) {
       return new MeleeAction(this.dx, this.dy).perform(performer as Actor)

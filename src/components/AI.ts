@@ -22,9 +22,13 @@ export abstract class BaseAI implements Action {
 
     this.path.clear()
 
-    dijkstra.compute(entity.x, entity.y, (x: number, y: number) => {
-      this.path.push(new Point(x, y))
-    })
+    dijkstra.compute(
+      entity.position.x,
+      entity.position.y,
+      (x: number, y: number) => {
+        this.path.push(new Point(x, y))
+      }
+    )
     // the first point in the path is the entity's current position, so discard it
     this.path.shift()
   }
@@ -37,18 +41,18 @@ export class HostileEnemy extends BaseAI {
 
   perform(self: Entity) {
     const target = window.engine.player
-    const dx = target.x - self.x
-    const dy = target.y - self.y
+    const dx = target.position.x - self.position.x
+    const dy = target.position.y - self.position.y
     const distance = Math.max(Math.abs(dx), Math.abs(dy))
 
     // initiate action if we are visible to the player
-    if (window.engine.gameMap.tiles[self.y][self.x].visible) {
+    if (window.engine.gameMap.tiles[self.position.y][self.position.x].visible) {
       // if we are adjacent - attack!
       if (distance <= 1) {
         return new MeleeAction(dx, dy).perform(self as Actor)
       }
       // otherwise, find a path from us to them
-      this.calculatePathTo(target.x, target.y, self)
+      this.calculatePathTo(target.position.x, target.position.y, self)
     }
 
     // if there is a valid path, try to move towards them
@@ -57,7 +61,10 @@ export class HostileEnemy extends BaseAI {
     if (this.path.length > 0) {
       const dest = this.path[0]
       this.path.shift()
-      return new MovementAction(dest.x - self.x, dest.y - self.y).perform(self)
+      return new MovementAction(
+        dest.x - self.position.x,
+        dest.y - self.position.y
+      ).perform(self)
     }
 
     // finally, nothing to do but wait
