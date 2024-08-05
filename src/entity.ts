@@ -7,6 +7,7 @@ import {
   HealingConsumable,
   Inventory
 } from './components'
+import { LightningConsumable } from './components/Consumable'
 import { GameMap } from './gameMap'
 import { Point } from './types/Point'
 
@@ -151,6 +152,22 @@ export function spawnHealthPotion(
     '#000',
     'Health Potion',
     new HealingConsumable(4),
+    gameMap
+  )
+}
+
+export function spawnLightningScroll(
+  gameMap: GameMap,
+  x: number,
+  y: number
+): Entity {
+  return new Item(
+    new Point(x, y),
+    '~',
+    '#ff0',
+    '#000',
+    'Lightning Scroll',
+    new LightningConsumable(20, 5),
     gameMap
   )
 }

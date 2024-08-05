@@ -1,7 +1,13 @@
 import { FLOOR_TILE, WALL_TILE, Tile } from './tileTypes'
 import { GameMap } from './gameMap'
 import { Map } from 'rot-js'
-import { Entity, spawnOrc, spawnTroll, spawnHealthPotion } from './entity'
+import {
+  Entity,
+  spawnOrc,
+  spawnTroll,
+  spawnHealthPotion,
+  spawnLightningScroll
+} from './entity'
 import type { Room as RogueRoom } from 'rot-js/lib/map/rogue'
 import { Point } from './types/Point'
 
@@ -147,7 +153,11 @@ function placeEntities(
     if (
       !dungeon.entities.any((e) => e.position.x === x && e.position.y === y)
     ) {
-      spawnHealthPotion(dungeon, x, y)
+      if (Math.random() < 0.7) {
+        spawnHealthPotion(dungeon, x, y)
+      } else {
+        spawnLightningScroll(dungeon, x, y)
+      }
     }
   }
 }
