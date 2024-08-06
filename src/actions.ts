@@ -41,7 +41,7 @@ export class ItemAction extends Action {
   }
 
   perform = (performer: Entity) => {
-    this.item?.consumable.activate(performer)
+    this.item?.consumable.activate(this, performer)
   }
 }
 
