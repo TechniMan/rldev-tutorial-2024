@@ -2,6 +2,7 @@ import type { Actor, Entity, Item } from '../entity'
 import { Inventory } from './Inventory'
 import { Action, ItemAction } from '../actions'
 import { Colours } from '../colours'
+import { ImpossibleException } from '../types/Exceptions'
 
 export abstract class Consumable {
   protected constructor(public parent: Item | null) {}
@@ -47,11 +48,7 @@ export class HealingConsumable extends Consumable {
       )
       this.consume()
     } else {
-      window.engine.messageLog.addMessage(
-        'Your health is already full.',
-        Colours.Impossible
-      )
-      throw new Error('Your health is already full.')
+      throw new ImpossibleException('Your health is already full.')
     }
   }
 }
@@ -92,11 +89,7 @@ export class LightningConsumable extends Consumable {
       target.fighter.takeDamage(this.damage)
       this.consume()
     } else {
-      window.engine.messageLog.addMessage(
-        'No enemy is close enough to strike.',
-        Colours.Error
-      )
-      throw new Error('No enemy is close enough to strike.')
+      throw new ImpossibleException('No enemy is close enough to strike.')
     }
   }
 }

@@ -6,6 +6,7 @@ import {
   PickupAction,
   WaitAction
 } from './actions'
+import { Colours } from './colours'
 import { Engine } from './engine'
 import { Point } from './types/Point'
 
@@ -79,7 +80,7 @@ export class GameInputHandler extends BaseInputHandler {
           window.engine.logCursorPosition =
             window.engine.messageLog.messages.length - 1
           break
-        case 'i':
+        case 'u':
           this.nextHandler = new InventoryInputHandler(InputState.UseInventory)
           break
         case 'd':
@@ -179,7 +180,8 @@ export class InventoryInputHandler extends BaseInputHandler {
           }
         } else {
           window.engine.messageLog.addMessage(
-            `You do not have an item at (${event.key}).`
+            `You do not have an item at (${event.key}).`,
+            Colours.Impossible
           )
           return null
         }

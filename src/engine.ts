@@ -14,6 +14,7 @@ import { MessageLog } from './messageLog'
 import { Colours } from './colours'
 import { Point } from './types/Point'
 import { Action } from './actions'
+import { ImpossibleException } from './types/Exceptions'
 
 export class Engine {
   // constants
@@ -138,7 +139,11 @@ export class Engine {
         action.perform(this.player)
         this.handleEnemyTurns()
         this.gameMap.updateFov(this.player)
-      } catch {}
+      } catch (e) {
+        if (e instanceof ImpossibleException) {
+          this.messageLog.addMessage(e.message, Colours.Impossible)
+        }
+      }
     }
     // progress to the next input handler (which could be the same handler)
     this.inputHandler = this.inputHandler.nextHandler
