@@ -227,14 +227,14 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
       window.engine.mousePosition = new Point(x, y)
       return null
     } else if (event.key === 'Enter') {
-      return this.onIndexSelected()
+      return this.onIndexSelected(window.engine.mousePosition)
     }
 
     this.nextHandler = new GameInputHandler()
     return null
   }
 
-  abstract onIndexSelected(): Action | null
+  abstract onIndexSelected(position: Point): Action | null
 }
 
 export class LookHandler extends SelectIndexHandler {
@@ -242,8 +242,21 @@ export class LookHandler extends SelectIndexHandler {
     super()
   }
 
-  onIndexSelected(): Action | null {
+  onIndexSelected(_position: Point): Action | null {
     this.nextHandler = new GameInputHandler()
     return null
+  }
+}
+
+type ActionCallback = (position: Point) => Action | null
+
+export class SingleRangedAttackHandler extends SelectIndexHandler {
+  constructor(public callback: ActionCallback) {
+    super()
+  }
+
+  onIndexSelected(position: Point): Action | null {
+    this.nextHandler = new GameInputHandler()
+    return this.callback(position)
   }
 }

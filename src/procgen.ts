@@ -6,7 +6,8 @@ import {
   spawnOrc,
   spawnTroll,
   spawnHealthPotion,
-  spawnLightningScroll
+  spawnLightningScroll,
+  spawnConfusionScroll
 } from './entity'
 import type { Room as RogueRoom } from 'rot-js/lib/map/rogue'
 import { Point } from './types/Point'
@@ -19,7 +20,7 @@ interface Bounds {
 }
 
 /** Generate an integer from min to max, inclusive */
-function rand_range(min: number, max: number) {
+export function rand_range(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
@@ -153,8 +154,11 @@ function placeEntities(
     if (
       !dungeon.entities.any((e) => e.position.x === x && e.position.y === y)
     ) {
-      if (Math.random() < 0.7) {
+      const itemChance = Math.random()
+      if (itemChance < 0.7) {
         spawnHealthPotion(dungeon, x, y)
+      } else if (itemChance < 0.9) {
+        spawnConfusionScroll(dungeon, x, y)
       } else {
         spawnLightningScroll(dungeon, x, y)
       }

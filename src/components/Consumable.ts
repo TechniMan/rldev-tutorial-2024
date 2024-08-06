@@ -3,6 +3,8 @@ import { Inventory } from './Inventory'
 import { Action, ItemAction } from '../actions'
 import { Colours } from '../colours'
 import { ImpossibleException } from '../types/Exceptions'
+import { SingleRangedAttackHandler } from '../inputHandlers'
+import { ConfusedEnemy } from './AI'
 
 export abstract class Consumable {
   protected constructor(public parent: Item | null) {}
@@ -14,7 +16,7 @@ export abstract class Consumable {
     return null
   }
 
-  abstract activate(consumer: Entity): void
+  abstract activate(action: ItemAction, consumer: Entity): void
 
   consume() {
     const item = this.parent
@@ -35,7 +37,7 @@ export class HealingConsumable extends Consumable {
     super(parent)
   }
 
-  activate(entity: Entity) {
+  activate(_action: ItemAction, entity: Entity) {
     const consumer = entity as Actor
     if (!consumer) return
 
@@ -62,7 +64,7 @@ export class LightningConsumable extends Consumable {
     super(parent)
   }
 
-  activate(entity: Entity) {
+  activate(_action: ItemAction, entity: Entity) {
     let target: Actor | null = null
     // +1 to ensure we capture everything that should be in range
     let closestDistance = this.maxRange + 1.0
@@ -91,5 +93,45 @@ export class LightningConsumable extends Consumable {
     } else {
       throw new ImpossibleException('No enemy is close enough to strike.')
     }
+  }
+}
+
+export class ConfusionConsumable extends Consumable {
+  constructor(public numberOfTurns: number, parent: Item | null = null) {
+    super(parent)
+  }
+
+  getAction(): Action | null {
+    window.engine.messageLog.addMessage(
+      'Select a target location.',
+      Colours.NeedsTarget
+    )
+    window.engine.inputHandler = new SingleRangedAttackHandler(
+      (p) => new ItemAction(this.parent, p)
+    )
+    return null
+  }
+
+  activate(action: ItemAction, consumer: Entity): void {
+    const target = action.targetActor
+
+    if (!target) {
+      throw new ImpossibleException('You must select an enemy to target.')
+    }
+    if (
+      !window.engine.gameMap.tiles[target.position.y][target.position.x].visible
+    ) {
+      throw new ImpossibleException('You cannot target an area you cannot see.')
+    }
+    if (Object.is(target, consumer)) {
+      throw new ImpossibleException('You cannot confuse yourself!')
+    }
+
+    window.engine.messageLog.addMessage(
+      `The eyes of the ${target.name} look vacant, as it starts to stumble around!`,
+      Colours.StatusEffectApplied
+    )
+    target.ai = new ConfusedEnemy(target.ai, this.numberOfTurns)
+    this.consume()
   }
 }

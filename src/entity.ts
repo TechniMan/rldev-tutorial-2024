@@ -7,7 +7,10 @@ import {
   HealingConsumable,
   Inventory
 } from './components'
-import { LightningConsumable } from './components/Consumable'
+import {
+  ConfusionConsumable,
+  LightningConsumable
+} from './components/Consumable'
 import { GameMap } from './gameMap'
 import { Point } from './types/Point'
 
@@ -168,6 +171,18 @@ export function spawnLightningScroll(
     '#000',
     'Lightning Scroll',
     new LightningConsumable(20, 5),
+    gameMap
+  )
+}
+
+export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    new Point(x, y),
+    '~',
+    '#c4f',
+    '#000',
+    'Confusion Scroll',
+    new ConfusionConsumable(10),
     gameMap
   )
 }
