@@ -9,6 +9,20 @@ export class Point {
   constructor(public x: number, public y: number) {}
 
   /**
+   * Returns the result of adding two points
+   */
+  static add(a: Point, b: Point): Point {
+    return new Point(a.x + b.x, a.y + b.y)
+  }
+
+  /**
+   * Returns a new copy of the Point
+   */
+  clone() {
+    return new Point(this.x, this.y)
+  }
+
+  /**
    * Calculate the straight-line diagonal distance between this and the other point.
    */
   distanceTo(other: Point): number {

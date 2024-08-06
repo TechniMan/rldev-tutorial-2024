@@ -91,23 +91,31 @@ export class Engine {
 
   printHelpMessages() {
     this.messageLog.addMessage(
-      'Use the numpad to move (5 waits a turn without moving).',
+      'Use the numpad keys to move.',
       Colours.WelcomeText
     )
     this.messageLog.addMessage(
-      'Press l to expand your message log history.',
+      '[5] waits a turn without moving.',
       Colours.WelcomeText
     )
     this.messageLog.addMessage(
-      'Press i to open your inventory, then press a letter to use that item.',
+      '[m] to expand the "Message log".',
       Colours.WelcomeText
     )
     this.messageLog.addMessage(
-      'Or press d to open your inventory, then press a letter to drop that item.',
+      '[u] to open the "Use item" menu.',
       Colours.WelcomeText
     )
     this.messageLog.addMessage(
-      'Finally, press h to print this help again. Good luck!',
+      '[d] to open the "Drop item" menu.',
+      Colours.WelcomeText
+    )
+    this.messageLog.addMessage(
+      '[l] to use the "Look" utility.',
+      Colours.WelcomeText
+    )
+    this.messageLog.addMessage(
+      '[h] for "Help". Good luck!',
       Colours.WelcomeText
     )
   }
@@ -266,5 +274,12 @@ export class Engine {
       Engine.MAP_HEIGHT,
       new Point(Engine.MAP_X, Engine.MAP_Y)
     )
+
+    if (this.inputHandler.inputState === InputState.Target) {
+      const { x, y } = this.mousePosition
+      const data = this.display._data[`${x},${y}`]
+      const char = data ? data[2] || ' ' : ' '
+      this.display.drawOver(x, y, char[0], '#000', '#fff')
+    }
   }
 }

@@ -6,6 +6,7 @@ import {
   PickupAction,
   WaitAction
 } from './actions'
+import { Engine } from './engine'
 import { Point } from './types/Point'
 
 interface LogMap {
@@ -40,7 +41,8 @@ export enum InputState {
   Dead,
   Log,
   UseInventory,
-  DropInventory
+  DropInventory,
+  Target
 }
 
 export abstract class BaseInputHandler {
@@ -72,7 +74,7 @@ export class GameInputHandler extends BaseInputHandler {
         case 'p':
           return new PickupAction()
 
-        case 'l':
+        case 'm':
           this.nextHandler = new LogInputHandler()
           window.engine.logCursorPosition =
             window.engine.messageLog.messages.length - 1
@@ -82,6 +84,9 @@ export class GameInputHandler extends BaseInputHandler {
           break
         case 'd':
           this.nextHandler = new InventoryInputHandler(InputState.DropInventory)
+          break
+        case 'l':
+          this.nextHandler = new LookHandler()
           break
         case 'h':
           window.engine.printHelpMessages()
@@ -181,6 +186,61 @@ export class InventoryInputHandler extends BaseInputHandler {
       }
     }
 
+    this.nextHandler = new GameInputHandler()
+    return null
+  }
+}
+
+export abstract class SelectIndexHandler extends BaseInputHandler {
+  protected constructor() {
+    super(InputState.Target)
+    // start the mouse position at the player
+    window.engine.mousePosition = Point.add(
+      window.engine.player.position,
+      new Point(Engine.MAP_X, Engine.MAP_Y)
+    )
+  }
+
+  handleKeyboardInput(event: KeyboardEvent): Action | null {
+    if (event.key in MOVE_KEYS) {
+      const moveAmount = MOVE_KEYS[event.key]
+      let modifier = 1
+      if (event.shiftKey) modifier = 5
+      // else if (event.ctrlKey) modifier = 10
+      // else if (event.altKey) modifier = 20
+
+      let { x, y } = window.engine.mousePosition
+      const { x: dx, y: dy } = moveAmount
+      x += dx * modifier
+      y += dy * modifier
+      x = Math.max(
+        Engine.MAP_X,
+        Math.min(x, Engine.MAP_X + Engine.MAP_WIDTH - 1)
+      )
+      y = Math.max(
+        Engine.MAP_Y,
+        Math.min(y, Engine.MAP_Y + Engine.MAP_HEIGHT - 1)
+      )
+
+      window.engine.mousePosition = new Point(x, y)
+      return null
+    } else if (event.key === 'Enter') {
+      return this.onIndexSelected()
+    }
+
+    this.nextHandler = new GameInputHandler()
+    return null
+  }
+
+  abstract onIndexSelected(): Action | null
+}
+
+export class LookHandler extends SelectIndexHandler {
+  constructor() {
+    super()
+  }
+
+  onIndexSelected(): Action | null {
     this.nextHandler = new GameInputHandler()
     return null
   }
