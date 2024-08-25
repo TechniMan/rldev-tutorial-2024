@@ -227,7 +227,12 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
       window.engine.mousePosition = new Point(x, y)
       return null
     } else if (event.key === 'Enter') {
-      return this.onIndexSelected(window.engine.mousePosition)
+      return this.onIndexSelected(
+        new Point(
+          window.engine.mousePosition.x - Engine.MAP_X,
+          window.engine.mousePosition.y - Engine.MAP_Y
+        )
+      )
     }
 
     this.nextHandler = new GameInputHandler()

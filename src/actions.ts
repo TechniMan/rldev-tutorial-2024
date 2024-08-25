@@ -34,7 +34,7 @@ export class ItemAction extends Action {
   }
 
   public get targetActor(): Actor | undefined {
-    if (!this.targetPosition) return
+    if (!this.targetPosition) return undefined
 
     const { x, y } = this.targetPosition
     return window.engine.gameMap.getActorAtLocation(x, y)
