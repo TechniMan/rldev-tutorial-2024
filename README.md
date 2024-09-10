@@ -10,7 +10,7 @@ This year, I'm going for TypeScript, using [ROT.js](https://ondras.github.io/rot
 
 [ ] Finish the tutorial
 
-[ ] Move bundled classes, etc out to their own files (e.g. Actor out of entity.ts) and organise everything into folder modules
+[ ] Move inlined classes, etc out to their own files (e.g. Actor out of entity.ts) and organise everything into folder modules
 
 [X] ~~Move UI layout around so info is on the side and map view is square~~
 
@@ -21,3 +21,5 @@ This year, I'm going for TypeScript, using [ROT.js](https://ondras.github.io/rot
 [ ] Fix input action always costing a turn, even if it's just scrolling through the message log
 
 [ ] Replace font with a more square one so square rendering messages are easier to read
+
+[ ] Add random tables to roll against for spawning monsters/loot, and replace procgen's map spawn method with it

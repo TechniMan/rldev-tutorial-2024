@@ -7,7 +7,8 @@ import {
   spawnTroll,
   spawnHealthPotion,
   spawnLightningScroll,
-  spawnConfusionScroll
+  spawnConfusionScroll,
+  spawnFireballScroll
 } from './entity'
 import type { Room as RogueRoom } from 'rot-js/lib/map/rogue'
 import { Point } from './types/Point'
@@ -157,6 +158,8 @@ function placeEntities(
       const itemChance = Math.random()
       if (itemChance < 0.7) {
         spawnHealthPotion(dungeon, x, y)
+      } else if (itemChance < 0.8) {
+        spawnFireballScroll(dungeon, x, y)
       } else if (itemChance < 0.9) {
         spawnConfusionScroll(dungeon, x, y)
       } else {

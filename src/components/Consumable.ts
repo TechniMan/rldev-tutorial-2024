@@ -3,7 +3,10 @@ import { Inventory } from './Inventory'
 import { Action, ItemAction } from '../actions'
 import { Colours } from '../colours'
 import { ImpossibleException } from '../types/Exceptions'
-import { SingleRangedAttackHandler } from '../inputHandlers'
+import {
+  SingleRangedAttackHandler,
+  AreaRangedAttackHandler
+} from '../inputHandlers'
 import { ConfusedEnemy } from './AI'
 
 export abstract class Consumable {
@@ -132,6 +135,57 @@ export class ConfusionConsumable extends Consumable {
       Colours.StatusEffectApplied
     )
     target.ai = new ConfusedEnemy(target.ai, this.numberOfTurns)
+    this.consume()
+  }
+}
+
+export class FireballDamageConsumable extends Consumable {
+  constructor(
+    public damage: number,
+    public radius: number,
+    parent: Item | null = null
+  ) {
+    super(parent)
+  }
+
+  getAction(): Action | null {
+    window.engine.messageLog.addMessage(
+      'Select a target location',
+      Colours.NeedsTarget
+    )
+    window.engine.inputHandler = new AreaRangedAttackHandler(
+      this.radius,
+      (p) => new ItemAction(this.parent, p)
+    )
+    return null
+  }
+
+  activate(action: ItemAction, _consumer: Entity): void {
+    const { targetPosition } = action
+    if (!targetPosition) {
+      throw new ImpossibleException('An area must be selected!')
+    }
+    if (
+      !window.engine.gameMap.tiles[targetPosition.y][targetPosition.x].visible
+    ) {
+      throw new ImpossibleException('You cannot target an area you cannot see!')
+    }
+
+    let targetsHit = false
+    for (const actor of window.engine.gameMap.livingActors) {
+      if (actor.position.distanceTo(targetPosition) <= this.radius) {
+        window.engine.messageLog.addMessage(
+          `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage.`
+        )
+        actor.fighter.takeDamage(this.damage)
+        targetsHit = true
+      }
+    }
+
+    if (!targetsHit) {
+      throw new ImpossibleException('No valid targets found in the area!')
+    }
+
     this.consume()
   }
 }

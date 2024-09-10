@@ -286,5 +286,6 @@ export class Engine {
       const char = data ? data[2] || ' ' : ' '
       this.display.drawOver(x, y, char[0], '#000', '#fff')
     }
+    this.inputHandler.onRender(this.display)
   }
 }

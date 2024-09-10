@@ -1,3 +1,5 @@
+import { Display } from 'rot-js'
+
 import type { Action } from './actions'
 import {
   BumpAction,
@@ -54,6 +56,8 @@ export abstract class BaseInputHandler {
   }
 
   abstract handleKeyboardInput(event: KeyboardEvent): Action | null
+
+  onRender(_display: Display) {}
 }
 
 export class GameInputHandler extends BaseInputHandler {
@@ -263,5 +267,31 @@ export class SingleRangedAttackHandler extends SelectIndexHandler {
   onIndexSelected(position: Point): Action | null {
     this.nextHandler = new GameInputHandler()
     return this.callback(position)
+  }
+}
+
+export class AreaRangedAttackHandler extends SelectIndexHandler {
+  constructor(public radius: number, public callback: ActionCallback) {
+    super()
+  }
+
+  onIndexSelected(position: Point): Action | null {
+    this.nextHandler = new GameInputHandler()
+    return this.callback(position)
+  }
+
+  onRender(display: Display): void {
+    const startX = window.engine.mousePosition.x - this.radius - 1
+    const startY = window.engine.mousePosition.y - this.radius - 1
+
+    for (let y = startY; y < startY + this.radius ** 2; ++y) {
+      for (let x = startX; x < startX + this.radius ** 2; ++x) {
+        // get char for this tile out of display buffer
+        const data = display._data[`${x},${y}`]
+        const char = data ? data[2] || ' ' : ' '
+        // redraw the character with white fg / red bg to highlight the area
+        display.drawOver(x, y, char[0], '#fff', '#f00')
+      }
+    }
   }
 }
