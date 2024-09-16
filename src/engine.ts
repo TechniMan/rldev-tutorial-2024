@@ -36,7 +36,6 @@ export class Engine {
   // instance
   display: ROT.Display
   gameMap: GameMap
-  messageLog: MessageLog
   inputHandler: BaseInputHandler
   logCursorPosition: number
 
@@ -54,8 +53,7 @@ export class Engine {
       forceSquareRatio: false
     })
     this.mousePosition = new Point(0, 0)
-    this.messageLog = new MessageLog()
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       // 'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
       'Welcome to the dungeon, adventurer!',
       Colours.WelcomeText
@@ -91,31 +89,31 @@ export class Engine {
   }
 
   printHelpMessages() {
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       'Use the numpad keys to move.',
       Colours.WelcomeText
     )
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       '[5] waits a turn without moving.',
       Colours.WelcomeText
     )
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       '[m] to expand the "Message log".',
       Colours.WelcomeText
     )
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       '[u] to open the "Use item" menu.',
       Colours.WelcomeText
     )
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       '[d] to open the "Drop item" menu.',
       Colours.WelcomeText
     )
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       '[l] to use the "Look" utility.',
       Colours.WelcomeText
     )
-    this.messageLog.addMessage(
+    window.messageLog.addMessage(
       '[h] for "Help". Good luck!',
       Colours.WelcomeText
     )
@@ -141,7 +139,7 @@ export class Engine {
         this.gameMap.updateFov(this.player)
       } catch (e) {
         if (e instanceof ImpossibleException) {
-          this.messageLog.addMessage(e.message, Colours.Impossible)
+          window.messageLog.addMessage(e.message, Colours.Impossible)
         }
       }
     }
@@ -233,7 +231,7 @@ export class Engine {
         Engine.UI_Y + 4,
         Engine.UI_WIDTH - 2,
         Engine.UI_HEIGHT - 5,
-        this.messageLog.messages.slice(0, this.logCursorPosition + 1)
+        window.messageLog.messages.slice(0, this.logCursorPosition + 1)
       )
     } /* UI to render in the normal state */ else {
       // y:4-10 Inventory Frame
@@ -256,7 +254,7 @@ export class Engine {
         17,
         'Messages'
       )
-      this.messageLog.render(
+      window.messageLog.render(
         this.display,
         1,
         Engine.UI_HEIGHT - 16,
@@ -282,9 +280,7 @@ export class Engine {
 
     if (this.inputHandler.inputState === InputState.Target) {
       const { x, y } = this.mousePosition
-      const data = this.display._data[`${x},${y}`]
-      const char = data ? data[2] || ' ' : ' '
-      this.display.drawOver(x, y, char[0], '#000', '#fff')
+      this.display.drawOver(x, y, null, '#000', '#fff')
     }
     this.inputHandler.onRender(this.display)
   }

@@ -47,7 +47,7 @@ export class HealingConsumable extends Consumable {
     const amountRecovered = consumer.fighter.heal(this.amount)
 
     if (amountRecovered > 0) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `You consume the ${this.parent?.name} and recover ${amountRecovered} HP.`,
         Colours.HealthRecovered
       )
@@ -88,7 +88,7 @@ export class LightningConsumable extends Consumable {
 
     // if a target was found, zap 'em!
     if (target) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `A lightning bolt strikes the ${target.name} with a loud thunder, for ${this.damage} damage!`
       )
       target.fighter.takeDamage(this.damage)
@@ -105,7 +105,7 @@ export class ConfusionConsumable extends Consumable {
   }
 
   getAction(): Action | null {
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       'Select a target location.',
       Colours.NeedsTarget
     )
@@ -130,7 +130,7 @@ export class ConfusionConsumable extends Consumable {
       throw new ImpossibleException('You cannot confuse yourself!')
     }
 
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       `The eyes of the ${target.name} look vacant, as it starts to stumble around!`,
       Colours.StatusEffectApplied
     )
@@ -149,7 +149,7 @@ export class FireballDamageConsumable extends Consumable {
   }
 
   getAction(): Action | null {
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       'Select a target location',
       Colours.NeedsTarget
     )
@@ -174,7 +174,7 @@ export class FireballDamageConsumable extends Consumable {
     let targetsHit = false
     for (const actor of window.engine.gameMap.livingActors) {
       if (actor.position.distanceTo(targetPosition) <= this.radius) {
-        window.engine.messageLog.addMessage(
+        window.messageLog.addMessage(
           `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage.`
         )
         actor.fighter.takeDamage(this.damage)

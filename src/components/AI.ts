@@ -100,9 +100,7 @@ export class ConfusedEnemy extends BaseAI {
     if (!actor) return
 
     if (this.turnsRemaining <= 0) {
-      window.engine.messageLog.addMessage(
-        `The ${actor.name} is no longer confused.`
-      )
+      window.messageLog.addMessage(`The ${actor.name} is no longer confused.`)
       actor.ai = this.previousAi
     } else {
       const { x, y } = directions[rand_range(0, directions.length)]

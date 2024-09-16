@@ -22,7 +22,7 @@ export class Inventory extends BaseComponent {
           this.parent.position.y,
           window.engine.gameMap
         )
-        window.engine.messageLog.addMessage(
+        window.messageLog.addMessage(
           `${this.parent.name} dropped the ${item.name}.`
         )
       }
