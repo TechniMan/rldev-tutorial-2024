@@ -50,12 +50,20 @@ export enum InputState {
 
 export abstract class BaseInputHandler {
   nextHandler: BaseInputHandler
+  mousePosition: Point
+  logCursorPosition: number
 
   protected constructor(public inputState: InputState = InputState.Game) {
     this.nextHandler = this
+    this.mousePosition = new Point()
+    this.logCursorPosition = window.messageLog.messages.length - 1
   }
 
   abstract handleKeyboardInput(event: KeyboardEvent): Action | null
+
+  handleMouseMovement(position: Point): void {
+    this.mousePosition = position
+  }
 
   onRender(_display: Display) {}
 }
@@ -81,7 +89,7 @@ export class GameInputHandler extends BaseInputHandler {
 
         case 'm':
           this.nextHandler = new LogInputHandler()
-          window.engine.logCursorPosition =
+          this.nextHandler.logCursorPosition =
             window.messageLog.messages.length - 1
           break
         case 'u':
@@ -114,14 +122,12 @@ export class LogInputHandler extends BaseInputHandler {
   handleKeyboardInput(event: KeyboardEvent): Action | null {
     // scroll to beginning
     if (event.key === 'Home') {
-      return new LogAction(() => (window.engine.logCursorPosition = 0))
+      return new LogAction(() => (this.logCursorPosition = 0))
     }
     // scroll to end
     if (event.key === 'End') {
       return new LogAction(
-        () =>
-          (window.engine.logCursorPosition =
-            window.messageLog.messages.length - 1)
+        () => (this.logCursorPosition = window.messageLog.messages.length - 1)
       )
     }
 
@@ -133,22 +139,21 @@ export class LogInputHandler extends BaseInputHandler {
     }
 
     return new LogAction(() => {
-      if (scrollAmount < 0 && window.engine.logCursorPosition === 0) {
+      if (scrollAmount < 0 && this.logCursorPosition === 0) {
         // wrap around to top
-        window.engine.logCursorPosition = window.messageLog.messages.length - 1
+        this.logCursorPosition = window.messageLog.messages.length - 1
       } else if (
         scrollAmount > 0 &&
-        window.engine.logCursorPosition ===
-          window.messageLog.messages.length - 1
+        this.logCursorPosition === window.messageLog.messages.length - 1
       ) {
         // wrap around to bottom
-        window.engine.logCursorPosition = 0
+        this.logCursorPosition = 0
       } else {
         // move the desired amount in the direction, clamped to the top/bottom message
-        window.engine.logCursorPosition = Math.max(
+        this.logCursorPosition = Math.max(
           0,
           Math.min(
-            window.engine.logCursorPosition + scrollAmount,
+            this.logCursorPosition + scrollAmount,
             window.messageLog.messages.length - 1
           )
         )
@@ -199,9 +204,8 @@ export class InventoryInputHandler extends BaseInputHandler {
 export abstract class SelectIndexHandler extends BaseInputHandler {
   protected constructor() {
     super(InputState.Target)
-    // start the mouse position at the player
-    window.engine.mousePosition = Point.add(
-      window.engine.player.position,
+    // start the mouse position at the player, offset by the map's offset
+    this.mousePosition = window.engine.player.position.plus(
       new Point(Engine.MAP_X, Engine.MAP_Y)
     )
   }
@@ -214,7 +218,7 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
       // else if (event.ctrlKey) modifier = 10
       // else if (event.altKey) modifier = 20
 
-      let { x, y } = window.engine.mousePosition
+      let { x, y } = this.mousePosition
       const { x: dx, y: dy } = moveAmount
       x += dx * modifier
       y += dy * modifier
@@ -227,13 +231,13 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
         Math.min(y, Engine.MAP_Y + Engine.MAP_HEIGHT - 1)
       )
 
-      window.engine.mousePosition = new Point(x, y)
+      this.mousePosition = new Point(x, y)
       return null
     } else if (event.key === 'Enter') {
       return this.onIndexSelected(
         new Point(
-          window.engine.mousePosition.x - Engine.MAP_X,
-          window.engine.mousePosition.y - Engine.MAP_Y
+          this.mousePosition.x - Engine.MAP_X,
+          this.mousePosition.y - Engine.MAP_Y
         )
       )
     }
@@ -280,8 +284,8 @@ export class AreaRangedAttackHandler extends SelectIndexHandler {
   }
 
   onRender(display: Display): void {
-    const startX = window.engine.mousePosition.x - this.radius - 1
-    const startY = window.engine.mousePosition.y - this.radius - 1
+    const startX = this.mousePosition.x - this.radius - 1
+    const startY = this.mousePosition.y - this.radius - 1
 
     for (let y = startY; y < startY + this.radius ** 2; ++y) {
       for (let x = startX; x < startX + this.radius ** 2; ++x) {

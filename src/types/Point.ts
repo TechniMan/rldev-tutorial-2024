@@ -6,13 +6,20 @@ export class Point {
     return new Point(array[0], array[1])
   }
 
-  constructor(public x: number, public y: number) {}
+  constructor(public x: number = 0, public y: number = 0) {}
 
   /**
-   * Returns the result of adding two points
+   * Returns a + b as a new Point, where a is this and b is the argument.
    */
-  static add(a: Point, b: Point): Point {
-    return new Point(a.x + b.x, a.y + b.y)
+  plus(b: Point): Point {
+    return new Point(this.x + b.x, this.y + b.y)
+  }
+
+  /**
+   * Returns a - b as a new Point, where a is this and b is the argument.
+   */
+  minus(b: Point): Point {
+    return new Point(this.x - b.x, this.y - b.y)
   }
 
   /**

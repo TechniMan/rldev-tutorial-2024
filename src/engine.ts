@@ -37,22 +37,18 @@ export class Engine {
   display: ROT.Display
   gameMap: GameMap
   inputHandler: BaseInputHandler
-  logCursorPosition: number
 
   // map
   player: Actor
-  mousePosition: Point
 
   constructor() {
     // init
     this.inputHandler = new GameInputHandler()
-    this.logCursorPosition = 0
     this.display = new ROT.Display({
       width: Engine.WIDTH,
       height: Engine.HEIGHT,
       forceSquareRatio: false
     })
-    this.mousePosition = new Point(0, 0)
     window.messageLog.addMessage(
       // 'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
       'Welcome to the dungeon, adventurer!',
@@ -80,7 +76,9 @@ export class Engine {
     })
 
     window.addEventListener('mousemove', (ev) => {
-      this.mousePosition = Point.fromArray(this.display.eventToPosition(ev))
+      this.inputHandler.handleMouseMovement(
+        Point.fromArray(this.display.eventToPosition(ev))
+      )
       this.render()
     })
 
@@ -231,7 +229,10 @@ export class Engine {
         Engine.UI_Y + 4,
         Engine.UI_WIDTH - 2,
         Engine.UI_HEIGHT - 5,
-        window.messageLog.messages.slice(0, this.logCursorPosition + 1)
+        window.messageLog.messages.slice(
+          0,
+          this.inputHandler.logCursorPosition + 1
+        )
       )
     } /* UI to render in the normal state */ else {
       // y:4-10 Inventory Frame
@@ -275,11 +276,12 @@ export class Engine {
     renderNamesAtLocation(
       Engine.MAP_X,
       Engine.MAP_HEIGHT,
+      this.inputHandler.mousePosition,
       new Point(Engine.MAP_X, Engine.MAP_Y)
     )
 
     if (this.inputHandler.inputState === InputState.Target) {
-      const { x, y } = this.mousePosition
+      const { x, y } = this.inputHandler.mousePosition
       this.display.drawOver(x, y, null, '#000', '#fff')
     }
     this.inputHandler.onRender(this.display)
