@@ -2,6 +2,7 @@ import { Display } from 'rot-js'
 
 import { Colours } from './colours'
 import { Point } from './types/Point'
+import { GameMap } from './gameMap'
 
 function drawColouredBar(
   display: Display,
@@ -40,15 +41,16 @@ export function renderNamesAtLocation(
   x: number,
   y: number,
   mousePosition: Point,
-  mapOffset: Point
+  mapOffset: Point,
+  gameMap: GameMap
 ) {
-  let { x: mouseX, y: mouseY } = mousePosition.minus(mapOffset)
+  const { x: mouseX, y: mouseY } = mousePosition.minus(mapOffset)
   if (
-    window.engine.gameMap.isInBounds(mouseX, mouseY) &&
-    window.engine.gameMap.tiles[mouseY][mouseX].visible
+    gameMap.isInBounds(mouseX, mouseY) &&
+    gameMap.tiles[mouseY][mouseX].visible
   ) {
     // get a list of names, separated by commas if there are multiple in the same spot
-    const names = window.engine.gameMap.entities
+    const names = gameMap.entities
       .filter((e) => e.position.x === mouseX && e.position.y === mouseY)
       .map((e) => e.name[0].toUpperCase() + e.name.substring(1))
       .join(', ')

@@ -9,8 +9,8 @@ import {
   WaitAction
 } from './actions'
 import { Colours } from './colours'
-import { Engine } from './engine'
 import { Point } from './types/Point'
+import { GameScreen } from './screens/GameScreen'
 
 interface LogMap {
   [key: string]: number
@@ -206,7 +206,7 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
     super(InputState.Target)
     // start the mouse position at the player, offset by the map's offset
     this.mousePosition = window.engine.player.position.plus(
-      new Point(Engine.MAP_X, Engine.MAP_Y)
+      new Point(GameScreen.MAP_X, GameScreen.MAP_Y)
     )
   }
 
@@ -223,12 +223,12 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
       x += dx * modifier
       y += dy * modifier
       x = Math.max(
-        Engine.MAP_X,
-        Math.min(x, Engine.MAP_X + Engine.MAP_WIDTH - 1)
+        GameScreen.MAP_X,
+        Math.min(x, GameScreen.MAP_X + GameScreen.MAP_WIDTH - 1)
       )
       y = Math.max(
-        Engine.MAP_Y,
-        Math.min(y, Engine.MAP_Y + Engine.MAP_HEIGHT - 1)
+        GameScreen.MAP_Y,
+        Math.min(y, GameScreen.MAP_Y + GameScreen.MAP_HEIGHT - 1)
       )
 
       this.mousePosition = new Point(x, y)
@@ -236,8 +236,8 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
     } else if (event.key === 'Enter') {
       return this.onIndexSelected(
         new Point(
-          this.mousePosition.x - Engine.MAP_X,
-          this.mousePosition.y - Engine.MAP_Y
+          this.mousePosition.x - GameScreen.MAP_X,
+          this.mousePosition.y - GameScreen.MAP_Y
         )
       )
     }

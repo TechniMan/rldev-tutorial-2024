@@ -10,6 +10,7 @@ import {
 import { rand_range } from '../procgen'
 import type { Actor, Entity } from '../entity'
 import { Point } from '../types/Point'
+import { GameMap } from '../gameMap'
 
 export abstract class BaseAI implements Action {
   path: Point[]
@@ -18,11 +19,15 @@ export abstract class BaseAI implements Action {
     this.path = []
   }
 
-  abstract perform(_performer: Entity): void
+  abstract perform(_performer: Entity, gameMap: GameMap): void
 
-  calculatePathTo(destX: number, destY: number, entity: Entity) {
-    const isPassable = (x: number, y: number) =>
-      window.engine.gameMap.tiles[y][x].walkable
+  calculatePathTo(
+    destX: number,
+    destY: number,
+    entity: Entity,
+    gameMap: GameMap
+  ) {
+    const isPassable = (x: number, y: number) => gameMap.tiles[y][x].walkable
     const dijkstra = new ROT.Path.Dijkstra(destX, destY, isPassable, {
       topology: 8 // 4/6/8 directions of movement
     })
@@ -46,20 +51,20 @@ export class HostileEnemy extends BaseAI {
     super()
   }
 
-  perform(self: Entity) {
+  perform(self: Entity, gameMap: GameMap) {
     const target = window.engine.player
     const dx = target.position.x - self.position.x
     const dy = target.position.y - self.position.y
     const distance = Math.max(Math.abs(dx), Math.abs(dy))
 
     // initiate action if we are visible to the player
-    if (window.engine.gameMap.tiles[self.position.y][self.position.x].visible) {
+    if (gameMap.tiles[self.position.y][self.position.x].visible) {
       // if we are adjacent - attack!
       if (distance <= 1) {
-        return new MeleeAction(dx, dy).perform(self as Actor)
+        return new MeleeAction(dx, dy).perform(self as Actor, gameMap)
       }
       // otherwise, find a path from us to them
-      this.calculatePathTo(target.position.x, target.position.y, self)
+      this.calculatePathTo(target.position.x, target.position.y, self, gameMap)
     }
 
     // if there is a valid path, try to move towards them
@@ -71,11 +76,11 @@ export class HostileEnemy extends BaseAI {
       return new MovementAction(
         dest.x - self.position.x,
         dest.y - self.position.y
-      ).perform(self)
+      ).perform(self, gameMap)
     }
 
     // finally, nothing to do but wait
-    return new WaitAction().perform(self)
+    return new WaitAction().perform(self, gameMap)
   }
 }
 
@@ -95,7 +100,7 @@ export class ConfusedEnemy extends BaseAI {
     super()
   }
 
-  perform(self: Entity) {
+  perform(self: Entity, gameMap: GameMap) {
     const actor = self as Actor
     if (!actor) return
 
@@ -106,7 +111,7 @@ export class ConfusedEnemy extends BaseAI {
       const { x, y } = directions[rand_range(0, directions.length)]
       this.turnsRemaining -= 1
       const action = new BumpAction(x, y)
-      action.perform(actor)
+      action.perform(actor, gameMap)
     }
   }
 }

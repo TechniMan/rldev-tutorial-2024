@@ -18,5 +18,5 @@ window.addEventListener('DOMContentLoaded', () => {
   window.engine = new Engine()
 
   // initial render
-  window.engine.render()
+  window.engine.screen.render()
 })

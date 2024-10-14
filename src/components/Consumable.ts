@@ -8,6 +8,7 @@ import {
   AreaRangedAttackHandler
 } from '../inputHandlers'
 import { ConfusedEnemy } from './AI'
+import { GameMap } from '../gameMap'
 
 export abstract class Consumable {
   protected constructor(public parent: Item | null) {}
@@ -19,7 +20,11 @@ export abstract class Consumable {
     return null
   }
 
-  abstract activate(action: ItemAction, consumer: Entity): void
+  abstract activate(
+    action: ItemAction,
+    consumer: Entity,
+    gameMap: GameMap
+  ): void
 
   consume() {
     const item = this.parent
@@ -40,7 +45,7 @@ export class HealingConsumable extends Consumable {
     super(parent)
   }
 
-  activate(_action: ItemAction, entity: Entity) {
+  activate(_action: ItemAction, entity: Entity, _gameMap: GameMap) {
     const consumer = entity as Actor
     if (!consumer) return
 
@@ -67,16 +72,16 @@ export class LightningConsumable extends Consumable {
     super(parent)
   }
 
-  activate(_action: ItemAction, entity: Entity) {
+  activate(_action: ItemAction, entity: Entity, gameMap: GameMap) {
     let target: Actor | null = null
     // +1 to ensure we capture everything that should be in range
     let closestDistance = this.maxRange + 1.0
 
     // find the closest valid target
-    for (const actor of window.engine.gameMap.livingActors) {
+    for (const actor of gameMap.livingActors) {
       if (
         !Object.is(actor, entity) &&
-        window.engine.gameMap.tiles[actor.position.y][actor.position.x].visible
+        gameMap.tiles[actor.position.y][actor.position.x].visible
       ) {
         const distance = entity.position.distanceTo(actor.position)
         if (distance < closestDistance) {
@@ -109,21 +114,19 @@ export class ConfusionConsumable extends Consumable {
       'Select a target location.',
       Colours.NeedsTarget
     )
-    window.engine.inputHandler = new SingleRangedAttackHandler(
+    window.engine.screen.inputHandler = new SingleRangedAttackHandler(
       (p) => new ItemAction(this.parent, p)
     )
     return null
   }
 
-  activate(action: ItemAction, consumer: Entity): void {
-    const target = action.targetActor
+  activate(action: ItemAction, consumer: Entity, gameMap: GameMap): void {
+    const target = action.targetActor(gameMap)
 
     if (!target) {
       throw new ImpossibleException('You must select an enemy to target.')
     }
-    if (
-      !window.engine.gameMap.tiles[target.position.y][target.position.x].visible
-    ) {
+    if (!gameMap.tiles[target.position.y][target.position.x].visible) {
       throw new ImpossibleException('You cannot target an area you cannot see.')
     }
     if (Object.is(target, consumer)) {
@@ -153,26 +156,24 @@ export class FireballDamageConsumable extends Consumable {
       'Select a target location',
       Colours.NeedsTarget
     )
-    window.engine.inputHandler = new AreaRangedAttackHandler(
+    window.engine.screen.inputHandler = new AreaRangedAttackHandler(
       this.radius,
       (p) => new ItemAction(this.parent, p)
     )
     return null
   }
 
-  activate(action: ItemAction, _consumer: Entity): void {
+  activate(action: ItemAction, _consumer: Entity, gameMap: GameMap): void {
     const { targetPosition } = action
     if (!targetPosition) {
       throw new ImpossibleException('An area must be selected!')
     }
-    if (
-      !window.engine.gameMap.tiles[targetPosition.y][targetPosition.x].visible
-    ) {
+    if (!gameMap.tiles[targetPosition.y][targetPosition.x].visible) {
       throw new ImpossibleException('You cannot target an area you cannot see!')
     }
 
     let targetsHit = false
-    for (const actor of window.engine.gameMap.livingActors) {
+    for (const actor of gameMap.livingActors) {
       if (actor.position.distanceTo(targetPosition) <= this.radius) {
         window.messageLog.addMessage(
           `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage.`

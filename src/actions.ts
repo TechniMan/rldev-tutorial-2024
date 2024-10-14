@@ -2,17 +2,18 @@ import type { Actor, Entity, Item } from './entity'
 import { Colours } from './colours'
 import { ImpossibleException } from './types/Exceptions'
 import { Point } from './types/Point'
+import { GameMap } from './gameMap'
 
 export abstract class Action {
   /**
    * Perform the action
    * @param performer Entity performing the action
    */
-  perform: (performer: Entity) => void = function () {}
+  perform: (performer: Entity, gameMap: GameMap) => void = function () {}
 }
 
 export class WaitAction extends Action {
-  perform = (_performer: Entity) => {}
+  perform = (_performer: Entity, _gameMap: GameMap) => {}
 }
 
 export class LogAction extends Action {
@@ -20,7 +21,7 @@ export class LogAction extends Action {
     super()
   }
 
-  perform = (_performer: Entity) => {
+  perform = (_performer: Entity, _gameMap: GameMap) => {
     this.moveLog()
   }
 }
@@ -33,31 +34,31 @@ export class ItemAction extends Action {
     super()
   }
 
-  public get targetActor(): Actor | undefined {
+  targetActor(gameMap: GameMap): Actor | undefined {
     if (!this.targetPosition) return undefined
 
     const { x, y } = this.targetPosition
-    return window.engine.gameMap.getActorAtLocation(x, y)
+    return gameMap.getActorAtLocation(x, y)
   }
 
-  perform = (performer: Entity) => {
-    this.item?.consumable.activate(this, performer)
+  perform = (performer: Entity, gameMap: GameMap) => {
+    this.item?.consumable.activate(this, performer, gameMap)
   }
 }
 
 export class PickupAction extends Action {
-  perform = (entity: Entity) => {
+  perform = (entity: Entity, gameMap: GameMap) => {
     const performer = entity as Actor
     if (!performer) return
 
     const { position, inventory } = performer
-    for (const item of window.engine.gameMap.items) {
+    for (const item of gameMap.items) {
       if (position.x === item.position.x && position.y === item.position.y) {
         if (inventory.items.length >= inventory.capacity) {
           throw new ImpossibleException('Your inventory is full.')
         }
 
-        window.engine.gameMap.removeEntity(item)
+        gameMap.removeEntity(item)
         item.parent = inventory
         inventory.items.push(item)
 
@@ -71,10 +72,10 @@ export class PickupAction extends Action {
 }
 
 export class DropItemAction extends ItemAction {
-  perform = (performer: Entity) => {
+  perform = (performer: Entity, gameMap: GameMap) => {
     const dropper = performer as Actor
     if (!dropper || !this.item) return
-    dropper.inventory.drop(this.item)
+    dropper.inventory.drop(this.item, gameMap)
   }
 }
 
@@ -83,7 +84,7 @@ export abstract class ActionWithDirection extends Action {
     super()
   }
 
-  perform = (_performer: Entity) => {}
+  perform = (_performer: Entity, _gameMap: GameMap) => {}
 }
 
 function theWayIsBlocked() {
@@ -91,18 +92,18 @@ function theWayIsBlocked() {
 }
 
 export class MovementAction extends ActionWithDirection {
-  perform = (performer: Entity) => {
+  perform = (performer: Entity, gameMap: GameMap) => {
     const destX = performer.position.x + this.dx
     const destY = performer.position.y + this.dy
 
     // ensure movement is valid
-    if (!window.engine.gameMap.isInBounds(destX, destY)) {
+    if (!gameMap.isInBounds(destX, destY)) {
       theWayIsBlocked()
     }
-    if (!window.engine.gameMap.tiles[destY][destX].walkable) {
+    if (!gameMap.tiles[destY][destX].walkable) {
       theWayIsBlocked()
     }
-    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
+    if (gameMap.getBlockingEntityAtLocation(destX, destY)) {
       theWayIsBlocked()
     }
 
@@ -111,14 +112,14 @@ export class MovementAction extends ActionWithDirection {
 }
 
 export class MeleeAction extends ActionWithDirection {
-  perform = (entity: Entity) => {
+  perform = (entity: Entity, gameMap: GameMap) => {
     const performer = entity as Actor
     if (!performer) return
 
     const destX = performer.position.x + this.dx
     const destY = performer.position.y + this.dy
 
-    const target = window.engine.gameMap.getActorAtLocation(destX, destY)
+    const target = gameMap.getActorAtLocation(destX, destY)
     if (!target) {
       throw new ImpossibleException('Nothing to attack.')
     }
@@ -146,14 +147,17 @@ export class MeleeAction extends ActionWithDirection {
 }
 
 export class BumpAction extends ActionWithDirection {
-  perform = (performer: Entity) => {
+  perform = (performer: Entity, gameMap: GameMap) => {
     const destX = performer.position.x + this.dx
     const destY = performer.position.y + this.dy
 
-    if (window.engine.gameMap.getActorAtLocation(destX, destY)) {
-      return new MeleeAction(this.dx, this.dy).perform(performer as Actor)
+    if (gameMap.getActorAtLocation(destX, destY)) {
+      return new MeleeAction(this.dx, this.dy).perform(
+        performer as Actor,
+        gameMap
+      )
     } else {
-      return new MovementAction(this.dx, this.dy).perform(performer)
+      return new MovementAction(this.dx, this.dy).perform(performer, gameMap)
     }
   }
 }
