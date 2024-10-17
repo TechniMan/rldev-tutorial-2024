@@ -65,7 +65,7 @@ export class GameScreen extends BaseScreen {
     })
   }
 
-  update(event: KeyboardEvent) {
+  update(event: KeyboardEvent): BaseScreen {
     // do the appropriate logic for the keyboard input
     const action = this.inputHandler.handleKeyboardInput(event)
     if (action instanceof Action) {
@@ -83,6 +83,8 @@ export class GameScreen extends BaseScreen {
     this.inputHandler = this.inputHandler.nextHandler
     // update the screen
     this.render()
+
+    return this
   }
 
   renderInventory(x: number, y: number, height: number) {

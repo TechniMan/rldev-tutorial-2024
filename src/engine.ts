@@ -6,7 +6,7 @@ import { Actor, spawnPlayer } from './entity'
 import { Colours } from './colours'
 import { Point } from './types/Point'
 import { BaseScreen } from './screens/BaseScreen'
-import { GameScreen } from './screens/GameScreen'
+import { MainMenuScreen } from './screens/MainMenuScreen'
 
 export class Engine {
   // constants
@@ -30,7 +30,7 @@ export class Engine {
       forceSquareRatio: false
     })
     window.messageLog.addMessage(
-      // 'ダンジョンにようこそ、ぼうけんしゃさん！', // boukensha:冒険者
+      // 'ダンジョンにようこそ、ぼうけんしゃさん！',
       'Welcome to the dungeon, adventurer!',
       Colours.WelcomeText
     )
@@ -55,7 +55,7 @@ export class Engine {
 
     // initial render
     // this.gameMap.updateFov(this.player)
-    this.screen = new GameScreen(this.display, this.player)
+    this.screen = new MainMenuScreen(this.display, this.player)
   }
 
   printHelpMessages() {
@@ -91,5 +91,9 @@ export class Engine {
 
   update(event: KeyboardEvent) {
     const screen = this.screen.update(event)
+    if (!Object.is(screen, this.screen)) {
+      this.screen = screen
+      this.screen.render()
+    }
   }
 }

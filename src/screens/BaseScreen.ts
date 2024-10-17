@@ -7,6 +7,6 @@ export abstract class BaseScreen {
 
   protected constructor(public display: Display, public player: Actor) {}
 
-  abstract update(event: KeyboardEvent): void
+  abstract update(event: KeyboardEvent): BaseScreen
   abstract render(): void
 }
