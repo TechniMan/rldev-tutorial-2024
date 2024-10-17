@@ -148,7 +148,7 @@ export function spawnHealthPotion(
   gameMap: GameMap,
   x: number,
   y: number
-): Entity {
+): Item {
   return new Item(
     new Point(x, y),
     '!',
@@ -164,7 +164,7 @@ export function spawnLightningScroll(
   gameMap: GameMap,
   x: number,
   y: number
-): Entity {
+): Item {
   return new Item(
     new Point(x, y),
     '~',
@@ -176,7 +176,11 @@ export function spawnLightningScroll(
   )
 }
 
-export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
+export function spawnConfusionScroll(
+  gameMap: GameMap,
+  x: number,
+  y: number
+): Item {
   return new Item(
     new Point(x, y),
     '~',
@@ -188,7 +192,11 @@ export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
   )
 }
 
-export function spawnFireballScroll(gameMap: GameMap, x: number, y: number) {
+export function spawnFireballScroll(
+  gameMap: GameMap,
+  x: number,
+  y: number
+): Item {
   return new Item(
     new Point(x, y),
     '~',

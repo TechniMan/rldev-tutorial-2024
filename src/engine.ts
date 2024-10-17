@@ -83,6 +83,7 @@ export class Engine {
       '[l] to use the "Look" utility.',
       Colours.WelcomeText
     )
+    window.messageLog.addMessage('[s] to "Save" the game.', Colours.WelcomeText)
     window.messageLog.addMessage(
       '[h] for "Help". Good luck!',
       Colours.WelcomeText

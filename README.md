@@ -23,3 +23,5 @@ This year, I'm going for TypeScript, using [ROT.js](https://ondras.github.io/rot
 [ ] Replace font with a more square one so square rendering messages are easier to read
 
 [ ] Add random tables to roll against for spawning monsters/loot, and replace procgen's map spawn method with it
+
+[ ] Make classes responsible for their own serialisation/deserialisation
