@@ -59,7 +59,7 @@ export class GameScreen extends BaseScreen {
     super(display, player)
 
     if (serialisedGameMap) {
-      const [map, loadedPlayer] = GameScreen.load(serialisedGameMap, display)
+      const [map, loadedPlayer] = GameScreen.load(serialisedGameMap)
       this.gameMap = map
       this.player = loadedPlayer
     } else {
@@ -311,10 +311,7 @@ export class GameScreen extends BaseScreen {
     }
   }
 
-  private static load(
-    serialisedGameMap: string,
-    display: Display
-  ): [GameMap, Actor] {
+  private static load(serialisedGameMap: string): [GameMap, Actor] {
     // deserialise the map
     const parsedMap = JSON.parse(serialisedGameMap) as SerialisedGameMap
 
