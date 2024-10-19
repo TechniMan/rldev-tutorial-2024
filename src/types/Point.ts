@@ -23,6 +23,13 @@ export class Point {
   }
 
   /**
+   * Returns whether two Points are equal.
+   */
+  equals(b: Point): boolean {
+    return this.x === b.x && this.y === b.y
+  }
+
+  /**
    * Returns a new copy of the Point
    */
   clone() {

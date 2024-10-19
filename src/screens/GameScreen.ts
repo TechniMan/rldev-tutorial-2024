@@ -45,11 +45,15 @@ export class GameScreen extends BaseScreen {
   public static readonly MAP_HEIGHT = 48
   public static readonly MIN_ROOM_SIZE = 5
   public static readonly MAX_ROOM_SIZE = 15
+  public static readonly ROOM_COLUMNS = 3
+  public static readonly ROOM_ROWS = 4
   public static readonly MAX_MONSTERS_PER_ROOM = 2
   public static readonly MAX_ITEMS_PER_ROOM = 2
 
-  gameMap: GameMap
+  // gameMap: definitely set in constructor, even if TypeScript doesn't think so
+  gameMap!: GameMap
   inputHandler: BaseInputHandler
+  currentFloor: number = 0
 
   constructor(
     display: Display,
@@ -59,23 +63,33 @@ export class GameScreen extends BaseScreen {
     super(display, player)
 
     if (serialisedGameMap) {
-      const [map, loadedPlayer] = GameScreen.load(serialisedGameMap)
+      const [map, loadedPlayer, currentFloor] =
+        GameScreen.load(serialisedGameMap)
       this.gameMap = map
       this.player = loadedPlayer
+      this.currentFloor = currentFloor
     } else {
-      this.gameMap = generateRogueDungeon(
-        GameScreen.MAP_WIDTH,
-        GameScreen.MAP_HEIGHT,
-        GameScreen.MIN_ROOM_SIZE,
-        GameScreen.MAX_ROOM_SIZE,
-        GameScreen.MAX_MONSTERS_PER_ROOM,
-        GameScreen.MAX_ITEMS_PER_ROOM,
-        this.player
-      )
+      this.generateFloor()
     }
 
     this.inputHandler = new GameInputHandler()
     this.gameMap.updateFov(this.player)
+  }
+
+  generateFloor(): void {
+    this.currentFloor += 1
+
+    this.gameMap = generateRogueDungeon(
+      GameScreen.MAP_WIDTH,
+      GameScreen.MAP_HEIGHT,
+      GameScreen.MIN_ROOM_SIZE,
+      GameScreen.MAX_ROOM_SIZE,
+      GameScreen.ROOM_COLUMNS,
+      GameScreen.ROOM_ROWS,
+      GameScreen.MAX_MONSTERS_PER_ROOM,
+      GameScreen.MAX_ITEMS_PER_ROOM,
+      this.player
+    )
   }
 
   handleEnemyTurns() {
@@ -147,12 +161,12 @@ export class GameScreen extends BaseScreen {
     this.display.clear()
 
     // ui
-    // y:0-3 PlayerInfo Frame
+    // y:0-4 PlayerInfo Frame
     renderFrameWithTitle(
       GameScreen.UI_X,
       GameScreen.UI_Y,
       GameScreen.UI_WIDTH,
-      3,
+      4,
       'Player Info'
     )
     // y:1 HealthBar
@@ -163,6 +177,11 @@ export class GameScreen extends BaseScreen {
       GameScreen.UI_X + 1,
       GameScreen.UI_Y + 1,
       GameScreen.UI_WIDTH - 2
+    )
+    this.display.drawText(
+      GameScreen.UI_X + 1,
+      GameScreen.UI_Y + 2,
+      `Dlvl - ${this.currentFloor}`
     )
 
     if (this.inputHandler.inputState === InputState.UseInventory) {
@@ -203,15 +222,15 @@ export class GameScreen extends BaseScreen {
         )
       )
     } /* UI to render in the normal state */ else {
-      // y:4-10 Inventory Frame
+      // y:5-11 Inventory Frame
       renderFrameWithTitle(
         GameScreen.UI_X,
-        GameScreen.UI_Y + 3,
+        GameScreen.UI_Y + 4,
         GameScreen.UI_WIDTH,
         7,
         'Inventory'
       )
-      this.renderInventory(GameScreen.UI_X + 1, GameScreen.UI_Y + 4, 5)
+      this.renderInventory(GameScreen.UI_X + 1, GameScreen.UI_Y + 5, 5)
     }
 
     if (this.inputHandler.inputState !== InputState.Log) {
@@ -258,6 +277,7 @@ export class GameScreen extends BaseScreen {
 
   private toObject(): SerialisedGameMap {
     return {
+      currentFloor: this.currentFloor,
       width: this.gameMap.width,
       height: this.gameMap.height,
       tiles: this.gameMap.tiles,
@@ -305,13 +325,19 @@ export class GameScreen extends BaseScreen {
 
   private saveGame() {
     try {
+      window.messageLog.addMessage('Saving...')
       localStorage.setItem('roguesave', JSON.stringify(this.toObject()))
+      window.messageLog.addMessage('Saved!')
     } catch (err) {
       console.error(err)
+      window.messageLog.addMessage(
+        'Error saving; check the console log.',
+        Colours.Error
+      )
     }
   }
 
-  private static load(serialisedGameMap: string): [GameMap, Actor] {
+  private static load(serialisedGameMap: string): [GameMap, Actor, number] {
     // deserialise the map
     const parsedMap = JSON.parse(serialisedGameMap) as SerialisedGameMap
 
@@ -385,6 +411,7 @@ export class GameScreen extends BaseScreen {
       }
     }
 
-    return [map, player]
+    window.messageLog.addMessage('Game loaded successfully!')
+    return [map, player, parsedMap.currentFloor]
   }
 }

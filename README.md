@@ -25,3 +25,5 @@ This year, I'm going for TypeScript, using [ROT.js](https://ondras.github.io/rot
 [ ] Add random tables to roll against for spawning monsters/loot, and replace procgen's map spawn method with it
 
 [ ] Make classes responsible for their own serialisation/deserialisation
+
+[ ] BUG: Sometimes, when going down a floor, the new map isn't generated.

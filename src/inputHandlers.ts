@@ -6,6 +6,7 @@ import {
   DropItemAction,
   LogAction,
   PickupAction,
+  TakeStairsAction,
   WaitAction
 } from './actions'
 import { Colours } from './colours'
@@ -86,6 +87,8 @@ export class GameInputHandler extends BaseInputHandler {
           return new WaitAction()
         case 'p':
           return new PickupAction()
+        case '>':
+          return new TakeStairsAction()
 
         case 'm':
           this.nextHandler = new LogInputHandler()

@@ -10,6 +10,7 @@ export enum Colours {
   EnemyAttack = '#fcc',
   NeedsTarget = '#4ff',
   StatusEffectApplied = '#4f4',
+  Descend = '#93f',
   PlayerDie = '#f33',
   EnemyDie = '#fa3',
   WelcomeText = '#2af',

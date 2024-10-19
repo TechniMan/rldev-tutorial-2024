@@ -1,7 +1,4 @@
-// const white = '#fff'
-const grey = '#888'
-const black = '#000'
-const goldenrod = '#fc4'
+import { Colours } from './colours'
 
 export interface TileGraphic {
   char: string
@@ -10,8 +7,8 @@ export interface TileGraphic {
 }
 export const INVISIBLE: TileGraphic = {
   char: ' ',
-  fg: black,
-  bg: black
+  fg: Colours.Black,
+  bg: Colours.Black
 }
 
 export interface Tile {
@@ -30,13 +27,13 @@ export const FLOOR_TILE: Tile = {
   seen: false,
   dark: {
     char: ' ',
-    fg: grey,
-    bg: black
+    fg: Colours.Grey,
+    bg: Colours.Black
   },
   light: {
     char: '.',
-    fg: goldenrod,
-    bg: black
+    fg: Colours.Goldenrod,
+    bg: Colours.Black
   }
 }
 
@@ -47,12 +44,29 @@ export const WALL_TILE: Tile = {
   seen: false,
   dark: {
     char: '#',
-    fg: grey,
-    bg: black
+    fg: Colours.Grey,
+    bg: Colours.Black
   },
   light: {
     char: '#',
-    fg: goldenrod, //'white'
-    bg: black
+    fg: Colours.Goldenrod, //'white'
+    bg: Colours.Black
+  }
+}
+
+export const STAIRS_DOWN_TILE: Tile = {
+  walkable: true,
+  transparent: true,
+  visible: false,
+  seen: false,
+  dark: {
+    char: '>',
+    fg: Colours.Grey,
+    bg: Colours.Black
+  },
+  light: {
+    char: '>',
+    fg: Colours.Descend,
+    bg: Colours.Black
   }
 }

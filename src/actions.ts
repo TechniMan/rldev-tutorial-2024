@@ -3,6 +3,7 @@ import { Colours } from './colours'
 import { ImpossibleException } from './types/Exceptions'
 import { Point } from './types/Point'
 import { GameMap } from './gameMap'
+import { GameScreen } from './screens/GameScreen'
 
 export abstract class Action {
   /**
@@ -158,6 +159,20 @@ export class BumpAction extends ActionWithDirection {
       )
     } else {
       return new MovementAction(this.dx, this.dy).perform(performer, gameMap)
+    }
+  }
+}
+
+export class TakeStairsAction extends Action {
+  perform = (performer: Entity, gameMap: GameMap) => {
+    if (performer.position.equals(gameMap.downstairsPosition)) {
+      window.messageLog.addMessage(
+        'You descend the staircase to a new floor.',
+        Colours.Descend
+      )
+      ;(window.engine.screen as GameScreen).generateFloor()
+    } else {
+      throw new ImpossibleException('There are no stairs here.')
     }
   }
 }

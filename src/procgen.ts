@@ -1,4 +1,4 @@
-import { FLOOR_TILE, WALL_TILE, Tile } from './tileTypes'
+import { FLOOR_TILE, WALL_TILE, STAIRS_DOWN_TILE, Tile } from './tileTypes'
 import { GameMap } from './gameMap'
 import { Map } from 'rot-js'
 import {
@@ -230,6 +230,8 @@ export function generateRogueDungeon(
   mapHeight: number,
   minRoomSize: number,
   maxRoomSize: number,
+  roomColumns: number,
+  roomRows: number,
   maxMonstersPerRoom: number,
   maxItemsPerRoom: number,
   player: Entity
@@ -238,8 +240,8 @@ export function generateRogueDungeon(
   const map = new Map.Rogue(mapWidth, mapHeight, {
     roomWidth: [minRoomSize, maxRoomSize],
     roomHeight: [minRoomSize, maxRoomSize],
-    cellWidth: 3,
-    cellHeight: 3
+    cellWidth: roomColumns,
+    cellHeight: roomRows
   })
 
   // create the dungeon map
@@ -248,15 +250,28 @@ export function generateRogueDungeon(
   })
 
   // fill in the rooms
-  // @ts-ignore `rooms` is private
+  // @ts-ignore `map.rooms` is private
   const rooms: RectangularRoom[] = map.rooms
     .reduce((acc: RogueRoom[], cur: RogueRoom) => acc.concat(cur), [])
     .map((rr: RogueRoom) => RectangularRoom.fromRogueRoom(rr))
+
   // place the player
   const startRoomIdx = rand_range(0, rooms.length - 1)
   player.position.x = rooms[startRoomIdx].centre.x
   player.position.y = rooms[startRoomIdx].centre.y
   player.parent = dungeon
+
+  // place the stairs
+  let stairsRoomIdx: number = -1
+  do {
+    stairsRoomIdx = rand_range(0, rooms.length - 1)
+  } while (stairsRoomIdx === startRoomIdx)
+  dungeon.downstairsPosition.x = rooms[stairsRoomIdx].centre.x
+  dungeon.downstairsPosition.y = rooms[stairsRoomIdx].centre.y
+  dungeon.tiles[dungeon.downstairsPosition.y][dungeon.downstairsPosition.x] = {
+    ...STAIRS_DOWN_TILE
+  }
+
   // place some entities in each room
   rooms.forEach((r: RectangularRoom) => {
     placeEntities(r, dungeon, maxMonstersPerRoom, maxItemsPerRoom)

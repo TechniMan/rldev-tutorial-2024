@@ -25,6 +25,7 @@ type SerialisedEntity = {
 }
 
 export type SerialisedGameMap = {
+  currentFloor: number
   width: number
   height: number
   tiles: Tile[][]

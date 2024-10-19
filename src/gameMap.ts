@@ -2,9 +2,11 @@ import { Display, FOV } from 'rot-js'
 import type { Tile, TileGraphic } from './tileTypes'
 import { INVISIBLE, WALL_TILE } from './tileTypes'
 import { Actor, Item, type Entity } from './entity'
+import { Point } from './types/Point'
 
 export class GameMap {
   tiles: Tile[][]
+  downstairsPosition: Point
 
   constructor(
     public width: number,
@@ -21,6 +23,7 @@ export class GameMap {
 
       this.tiles[y] = row
     }
+    this.downstairsPosition = new Point()
   }
 
   public get gameMap(): GameMap {
