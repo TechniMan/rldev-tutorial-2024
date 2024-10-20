@@ -8,6 +8,14 @@ type SerialisedFighter = {
   power: number
 }
 
+type SerialisedLevel = {
+  levelUpBase: number
+  levelUpFactor: number
+  xpGiven: number
+  currentLevel: number
+  currentXp: number
+}
+
 type SerialisedItem = {
   itemType: string
 }
@@ -19,6 +27,7 @@ type SerialisedEntity = {
   bg: string
   name: string
   fighter: SerialisedFighter | null
+  level: SerialisedLevel | null
   aiType: string | null
   confusedTurnsRemaining: number
   inventory: SerialisedItem[] | null

@@ -12,6 +12,7 @@ import {
 import { Colours } from './colours'
 import { Point } from './types/Point'
 import { GameScreen } from './screens/GameScreen'
+import { renderFrameWithTitle } from './renderFunctions'
 
 interface LogMap {
   [key: string]: number
@@ -46,7 +47,9 @@ export enum InputState {
   Log,
   UseInventory,
   DropInventory,
-  Target
+  Target,
+  LevelUp,
+  CharacterScreen
 }
 
 export abstract class BaseInputHandler {
@@ -75,44 +78,130 @@ export class GameInputHandler extends BaseInputHandler {
   }
 
   handleKeyboardInput(event: KeyboardEvent): Action | null {
-    // isAlive
-    if (window.engine.player.fighter.hp > 0) {
-      if (event.key in MOVE_KEYS) {
-        const { x, y } = MOVE_KEYS[event.key]
-        return new BumpAction(x, y)
-      }
-
-      switch (event.key) {
-        case '5':
-          return new WaitAction()
-        case 'p':
-          return new PickupAction()
-        case '>':
-          return new TakeStairsAction()
-
-        case 'm':
-          this.nextHandler = new LogInputHandler()
-          this.nextHandler.logCursorPosition =
-            window.messageLog.messages.length - 1
-          break
-        case 'u':
-          this.nextHandler = new InventoryInputHandler(InputState.UseInventory)
-          break
-        case 'd':
-          this.nextHandler = new InventoryInputHandler(InputState.DropInventory)
-          break
-        case 'l':
-          this.nextHandler = new LookHandler()
-          break
-        case 'h':
-          window.engine.printHelpMessages()
-          break
-
-        default:
-          break
-      }
+    // !isAlive
+    if (window.engine.player.fighter.hp <= 0) {
+      return null
     }
 
+    if (window.engine.player.level.requiresLevelUp) {
+      this.nextHandler = new LevelUpEventHandler()
+      return null
+    }
+
+    if (event.key in MOVE_KEYS) {
+      const { x, y } = MOVE_KEYS[event.key]
+      return new BumpAction(x, y)
+    }
+
+    switch (event.key) {
+      case '5':
+        return new WaitAction()
+      case 'p':
+        return new PickupAction()
+      case '>':
+        return new TakeStairsAction()
+
+      case 'm':
+        this.nextHandler = new LogInputHandler()
+        this.nextHandler.logCursorPosition =
+          window.messageLog.messages.length - 1
+        break
+      case 'u':
+        this.nextHandler = new InventoryInputHandler(InputState.UseInventory)
+        break
+      case 'd':
+        this.nextHandler = new InventoryInputHandler(InputState.DropInventory)
+        break
+      case 'c':
+        this.nextHandler = new CharacterScreenInputHandler()
+        break
+      case 'l':
+        this.nextHandler = new LookHandler()
+        break
+      case 'h':
+        window.engine.printHelpMessages()
+        break
+
+      default:
+        break
+    }
+
+    // no action
+    return null
+  }
+}
+
+export class LevelUpEventHandler extends BaseInputHandler {
+  constructor() {
+    super(InputState.LevelUp)
+  }
+
+  onRender(display: Display): void {
+    const x = window.engine.player.position.x <= 30 ? 40 : 0
+
+    renderFrameWithTitle(x, 0, 35, 8, 'Level Up')
+
+    display.drawText(x + 1, 1, 'Congratulations! You level up!')
+    display.drawText(x + 1, 2, 'Select an attribute to increase.')
+
+    const f = window.engine.player.fighter
+    display.drawText(x + 1, 4, `[a] Constitution (+20 HP, from ${f.maxHp})`)
+    display.drawText(x + 1, 5, `[b] Strength (+1 attack, from ${f.power})`)
+    display.drawText(x + 1, 6, `[c] Agility (+1 defense, from ${f.defense})`)
+  }
+
+  handleKeyboardInput(event: KeyboardEvent): Action | null {
+    switch (event.key) {
+      case 'a':
+        window.engine.player.level.increaseMaxHp(20)
+        break
+
+      case 'b':
+        window.engine.player.level.increasePower(1)
+        break
+
+      case 'c':
+        window.engine.player.level.increaseDefense(1)
+        break
+
+      default:
+        window.messageLog.addMessage('Invalid selection.', Colours.Invalid)
+        return null
+    }
+
+    this.nextHandler = new GameInputHandler()
+    return null
+  }
+}
+
+export class CharacterScreenInputHandler extends BaseInputHandler {
+  constructor() {
+    super()
+  }
+
+  onRender(display: Display): void {
+    const x = window.engine.player.position.x <= 30 ? 40 : 0
+    const y = 0
+    const title = 'Character Information'
+    const width = title.length + 4
+
+    renderFrameWithTitle(x, y, width, 7, title)
+
+    const l = window.engine.player.level
+    const f = window.engine.player.fighter
+    display.drawText(x + 1, y + 1, `Level: ${l.currentLevel}`)
+    display.drawText(x + 1, y + 2, `XP: ${l.currentXp}`)
+    display.drawText(
+      x + 1,
+      y + 3,
+      `XP for next level: ${l.experienceToNextLevel}`
+    )
+    display.drawText(x + 1, y + 4, `Attack: ${f.power}`)
+    display.drawText(x + 1, y + 5, `Defense: ${f.defense}`)
+  }
+
+  handleKeyboardInput(_event: KeyboardEvent): Action | null {
+    this.nextHandler = new GameInputHandler()
     return null
   }
 }

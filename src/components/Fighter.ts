@@ -63,6 +63,9 @@ export class Fighter extends BaseComponent {
     } else {
       deathMessage = `${this.parent.name} has died.`
       fg = Colours.EnemyDie
+
+      // grant xp to the player
+      window.engine.player.level.addXp(this.parent.level.xpGiven)
     }
 
     this.parent.char = '%'

@@ -1,4 +1,5 @@
 import type { BaseAI, BaseComponent } from './components'
+import { Level } from './components'
 
 import {
   HostileEnemy,
@@ -70,6 +71,7 @@ export class Actor extends Entity {
     public ai: BaseAI | null,
     public fighter: Fighter,
     public inventory: Inventory,
+    public level: Level,
     public parent: GameMap | null = null
   ) {
     super(position, char, fg, bg, name, true, RenderOrder.Actor, parent)
@@ -103,7 +105,7 @@ export function spawnPlayer(
   y: number,
   gameMap: GameMap | null = null
 ): Actor {
-  return new Actor(
+  const player = new Actor(
     new Point(x, y),
     '@',
     '#fff',
@@ -112,8 +114,11 @@ export function spawnPlayer(
     null,
     new Fighter(30, 2, 5),
     new Inventory(26),
+    new Level(20, 200),
     gameMap
   )
+  player.level.parent = player
+  return player
 }
 
 export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
@@ -126,6 +131,7 @@ export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
     new HostileEnemy(),
     new Fighter(10, 0, 3),
     new Inventory(0),
+    Level.GivesXp(35),
     gameMap
   )
 }
@@ -140,6 +146,7 @@ export function spawnTroll(gameMap: GameMap, x: number, y: number): Actor {
     new HostileEnemy(),
     new Fighter(16, 1, 4),
     new Inventory(0),
+    Level.GivesXp(100),
     gameMap
   )
 }

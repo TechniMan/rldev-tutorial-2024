@@ -283,6 +283,7 @@ export class GameScreen extends BaseScreen {
       tiles: this.gameMap.tiles,
       entities: this.gameMap.entities.map((e) => {
         let fighter = null
+        let level = null
         let aiType = null
         let inventory = null
         let confusedTurnsRemaining = 0
@@ -291,6 +292,20 @@ export class GameScreen extends BaseScreen {
           const actor = e as Actor
           const { maxHp, _hp: hp, defense, power } = actor.fighter
           fighter = { maxHp, hp, defense, power }
+          const {
+            currentXp,
+            currentLevel,
+            levelUpBase,
+            levelUpFactor,
+            xpGiven
+          } = actor.level
+          level = {
+            currentXp,
+            currentLevel,
+            levelUpBase,
+            levelUpFactor,
+            xpGiven
+          }
 
           if (actor.ai) {
             aiType = actor.ai instanceof HostileEnemy ? 'hostile' : 'confused'
@@ -315,6 +330,7 @@ export class GameScreen extends BaseScreen {
           bg: e.bg,
           name: e.name,
           fighter,
+          level,
           aiType,
           confusedTurnsRemaining,
           inventory
@@ -347,7 +363,9 @@ export class GameScreen extends BaseScreen {
       throw new Error('Player not found')
     }
     const player = spawnPlayer(playerEntity.position.x, playerEntity.position.y)
-    player.fighter.hp = playerEntity.fighter?.hp || player.fighter.maxHp
+    player.fighter.hp = playerEntity.fighter!.hp
+    player.level.currentLevel = playerEntity.level!.currentLevel
+    player.level.currentXp = playerEntity.level!.currentXp
     window.engine.player = player
 
     // setup the map
