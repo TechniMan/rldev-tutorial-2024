@@ -59,33 +59,33 @@ export class Engine {
   }
 
   printHelpMessages() {
+    // 28 chars per line
     window.messageLog.addMessage(
       'Use the numpad keys to move.',
       Colours.WelcomeText
     )
+    window.messageLog.addMessage('[5] wait one turn', Colours.WelcomeText)
     window.messageLog.addMessage(
-      '[5] waits a turn without moving.',
+      '[m] expand the Message log',
       Colours.WelcomeText
     )
     window.messageLog.addMessage(
-      '[m] to expand the "Message log".',
+      '[p] Pick up item from ground',
       Colours.WelcomeText
     )
     window.messageLog.addMessage(
-      '[u] to open the "Use item" menu.',
+      '[u] Use item from inventory',
       Colours.WelcomeText
     )
     window.messageLog.addMessage(
-      '[d] to open the "Drop item" menu.',
+      '[d] Drop item from inventory',
       Colours.WelcomeText
     )
+    window.messageLog.addMessage('[l] Look around the map', Colours.WelcomeText)
+    window.messageLog.addMessage('[c] Character info', Colours.WelcomeText)
+    window.messageLog.addMessage('[s] Save the game', Colours.WelcomeText)
     window.messageLog.addMessage(
-      '[l] to use the "Look" utility.',
-      Colours.WelcomeText
-    )
-    window.messageLog.addMessage('[s] to "Save" the game.', Colours.WelcomeText)
-    window.messageLog.addMessage(
-      '[h] for "Help". Good luck!',
+      '[h] for Help. Good luck!',
       Colours.WelcomeText
     )
   }
